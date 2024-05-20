@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+  "trailingComma": "all",
+  "printWidth": 200,
+  "arrowParens": "avoid",
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "endOfLine": "auto",
+  "semi": false
+}
