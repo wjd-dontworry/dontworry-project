@@ -1,11 +1,19 @@
 import { View, Text } from 'react-native'
 import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import styled from "styled-components/native";
 
 export default function ProfileScreen() {
   return (
-    <SafeAreaView>
-      <Text>ProfileScreen</Text>
-    </SafeAreaView>
+      <ProfileBox>
+
+      </ProfileBox>
   )
 }
+
+// ------------------- style ------------------- //
+
+const ProfileBox = styled.View`
+  width: 100%;
+  height: 150px;
+  background-color: #FFFFFF;
+`;

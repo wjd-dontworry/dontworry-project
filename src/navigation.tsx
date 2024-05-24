@@ -4,15 +4,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import HomeScreen from "./pages/HomeScreen"
 import LoginScreen from "./pages/LoginScreen"
 import ProfileScreen from "./pages/ProfileScreen"
-// test.coding
+import ChallengeScreen from "./pages/ChallengeScreen"
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
 
 function TabNavigator() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Navigator screenOptions={{ headerShown: true }}>
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }}/>
+      <Tab.Screen name="Challenge" component={ChallengeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   )
@@ -21,7 +22,7 @@ function TabNavigator() {
 export default function Navigation() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: true }}>
         <Stack.Screen name="TabNavigator" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} />
       </Stack.Navigator>
