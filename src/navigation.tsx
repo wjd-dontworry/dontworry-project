@@ -5,6 +5,7 @@ import HomeScreen from "./pages/HomeScreen"
 import LoginScreen from "./pages/LoginScreen"
 import ProfileScreen from "./pages/ProfileScreen"
 import ChallengeScreen from "./pages/ChallengeScreen"
+import ChallengeCreateScreen from "./pages/ChallengeCreateScreen"
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -25,6 +26,7 @@ export default function Navigation() {
       <Stack.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: true }}>
         <Stack.Screen name="TabNavigator" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="ChallengeCreate" component={ChallengeCreateScreen} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
   )
