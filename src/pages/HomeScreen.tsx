@@ -1,12 +1,14 @@
 import { View, Text, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../db/supabase';
 import { Tables } from '../db/types/supabase';
 import styled from "styled-components/native";
 import Carousel from '../components/carousel';
+import { fetchChallengeById } from '../db/api/challenge';
+import { supabase } from '../db/supabase';
 
 export default function HomeScreen() {
   const [challenge, setChallenge] = useState<Tables<'challenge'>[]>([]);
+  const [userUUID, setUserUUID] = useState<string | null>(null);
 
   //캐러셀
   const screenWidth = Math.round(Dimensions.get('window').width);
@@ -37,34 +39,33 @@ export default function HomeScreen() {
     }
   ];
 
-
-  const fetchUserById = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('challenge')
-        .select('*')
-        .returns<Tables<'challenge'>[]>();
-
-      if (error) {
-        console.log('Error :', error);
-        return [];
-      }
-
-      return data;
-    } catch (error) {
-      console.log('Catch Error :', error);
-      return [];
+  const getUserUUID = async (): Promise<string | null> => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Error fetching user:', error);
+      return null;
     }
+    return user?.id || null;
   };
 
   useEffect(() => {
-    const getChallenges = async () => {
-      const challengeData = await fetchUserById();
-      console.log(challengeData);
-      setChallenge(challengeData);
+    const fetchUserUUID = async () => {
+      const uuid = await getUserUUID();
+      setUserUUID(uuid);
+
+      return uuid;
     };
 
-    getChallenges()
+    const getChallenges = async (uuid : string | null) => {
+      if(uuid){
+        const challengeData = await fetchChallengeById(uuid);
+        console.log(challengeData);
+        setChallenge(challengeData);
+      }
+    };
+
+    fetchUserUUID().then(result => getChallenges(result));
+
   }, []);
 
   return (
@@ -83,7 +84,7 @@ export default function HomeScreen() {
       </View>
       <View style={{padding:15}}>
         {challenge.length > 0 ? (
-            challenge.map((item, index) => (
+            challenge.slice(0, 4).map((item, index) => (
               <CardContainer key={index}>
                 <CardItem>
                   <Text style={{fontWeight:'bold',  width: '35%', marginRight:'auto'}}>{item.title}</Text>

@@ -1,16 +1,21 @@
-import { View, Text, TextInput, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import styled from "styled-components/native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from 'react-native';
 import { supabase } from '../db/supabase';
 import { Tables } from '../db/types/supabase';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ChallengeCreateScreen() {
     const [title, setTitle] = useState('');
+    const [userId, setUserId] = useState<string | undefined>();
+    const [userUUID, setUserUUID] = useState<string | null>(null);
+
+    const navigation = useNavigation();
 
     const [challengeList, setChallengeList] = useState([
-        {id:0, time:'', challenge:''}
+        {id:0, time:'', taskname:''}
     ]);
 
     const onChangeItemInput = (id: number, name: string, value: string) => {
@@ -30,7 +35,7 @@ export default function ChallengeCreateScreen() {
             {
                 id: lastId + 1,
                 time: '',
-                challenge: ''
+                taskname: ''
             }
         ]);
     }
@@ -40,7 +45,7 @@ export default function ChallengeCreateScreen() {
             const { data, error } = await supabase
             .from('challenge')
             .insert([
-              { title: title, start_date: '2024-05-01', end_date: '2024-05-31' ,user_id: '058e481b-02a5-4094-98c1-2a6084d08442' },
+              { title: title, start_date: '2024-05-01', end_date: '2024-05-31' ,user_id: userUUID },
             ])
             .select('challenge_id')
     
@@ -56,20 +61,23 @@ export default function ChallengeCreateScreen() {
         }
       };
 
-      const createTask = async () => {
+      const createTasks = async (challengeId: number, tasks: Array<{ time: string; taskname: string }>) => {
         try {
-            const { data, error } = await supabase
+          const inserts = tasks.map(task => ({
+            taskname: task.taskname,
+            time: task.time,
+            challenge_id: challengeId,
+          }));
+      
+          const { data, error } = await supabase
             .from('challenge_task')
-            .insert([
-              { taskname: 'test', time: '18:51:01' ,challenge_id: 1 },
-            ])
-            .select('challenge_id')
-    
+            .insert(inserts);
+      
           if (error) {
             console.log('Error :', error);
             return [];
           }
-    
+      
           return data;
         } catch (error) {
           console.log('Catch Error :', error);
@@ -79,23 +87,47 @@ export default function ChallengeCreateScreen() {
 
       const getChallenges = async () => {
         const challengeData = await createChallenge();
-        console.log(challengeData[0].challenge_id);
+        if(challengeData.length > 0) {
+            console.log(challengeData[0].challenge_id);
+            return challengeData[0].challenge_id;
+        } else {
+            console.error('No challenge data found');
+            return null;
+        }
+    };
 
-        return challengeData[0].challenge_id;
+      const getUserUUID = async (): Promise<string | null> => {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error('Error fetching user:', error);
+          return null;
+        }
+        return user?.id || null;
       };
 
-    const submit = () => {
-        console.log(getChallenges());
-        //createTask();
-        console.log(title);
-        console.log(challengeList);
+      useEffect(() => {
+        const fetchUserUUID = async () => {
+          const uuid = await getUserUUID();
+          setUserUUID(uuid);
+        };
+    
+        fetchUserUUID();
+      }, []);
+
+      const submit = async () => {
+        const challengeId = await getChallenges();
+        if (challengeId) {
+            await createTasks(challengeId, challengeList);
+        }
     }
+    
 
   return (
-    <SafeAreaView>
-        <Container>
+    <Container>
+          <SafeAreaView>
             <TopBox>
                 <TitleInput placeholder='제목을 입력하세요' value={title} onChangeText={setTitle}/>
+                <BottomBorder/>
             </TopBox>
             <MiddleBox>
                 <TimeTableHeader>
@@ -110,34 +142,42 @@ export default function ChallengeCreateScreen() {
                             onChangeText={(value:string) => onChangeItemInput(item.id, 'time', value)}
                         />
                         <ChallengeInput
-                            value={item.challenge}
-                            onChangeText={(value:string) => onChangeItemInput(item.id, 'challenge', value)}
+                            value={item.taskname}
+                            onChangeText={(value:string) => onChangeItemInput(item.id, 'taskname', value)}
                         />
-                        <Button title='삭제' onPress={() => removeChallenge(item.id)}/>
+                        <TouchableOpacity onPress={() => removeChallenge(item.id)}>
+                          <DeleteButton>
+                            <Text>-</Text>
+                          </DeleteButton>
+                        </TouchableOpacity>
                     </TimeTableBody>
                 ))}
-                <AddButton title='추가' onPress={addChallenge}/>
+                <TouchableOpacity onPress={addChallenge} style={{alignItems:'center'}}>
+                  <AddButton>
+                    <Text>+</Text>
+                  </AddButton>
+                </TouchableOpacity>
                 </ScrollView>
             </MiddleBox>
             <BottomBox>
                 <SubmitButton onPress={submit}>
                     <Text style={{color:'#FFFFFF'}}>등록</Text>
                 </SubmitButton>
-                <CancelButton>
+                <CancelButton onPress={() => navigation.goBack()}>
                     <Text>취소</Text>
                 </CancelButton>
             </BottomBox>
-        </Container>
     </SafeAreaView>
+        </Container>
   )
 }
 
 // ------------------- style ------------------- //
 const Container = styled.View`
-    background-color: '#FFFFFF';
+    background-color: #FFFFFF;
     width: 100%;
     height: 100%;
-    padding: 20px;
+    padding: 30px;
 
     gap: 20px;
 `;
@@ -163,17 +203,21 @@ const TitleInput = styled.TextInput`
     font-size: 22px;
 `;
 
+const BottomBorder = styled.View`
+  border: 0.5px gray;
+`;
+
 const TimeTableHeader = styled.View`
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    gap: 55px;
 `;
 
 const TimeTableBody = styled.View`
     display: flex;
     flex-direction: row;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 `;
 
 const TimeInput = styled.TextInput`
@@ -181,20 +225,36 @@ const TimeInput = styled.TextInput`
     font-size: 16px;
     padding: 5px 10px;
 
-    border: 1px gray;
+    border: 0.5px gray;
+    background-color:#FFF6F1;
     border-radius: 5px;
 `;
 
 const ChallengeInput = styled.TextInput`
-    width: 60%;
+    width: 65%;
     font-size: 16px;
     padding: 5px 10px;
 
-    border: 1px gray;
+    border: 0.5px gray;
     border-radius: 5px;
 `;
 
-const AddButton = styled.Button`
+const DeleteButton = styled.View`
+    background-color: #FFE6BF;
+    width: 30px;
+    height: 40px;
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+`;
+
+const AddButton = styled.View`
+    background-color: #FFE6BF;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
 `;
 
 const SubmitButton = styled.TouchableOpacity`
