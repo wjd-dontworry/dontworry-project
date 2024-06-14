@@ -1,14 +1,16 @@
-import { View, Text, Button } from 'react-native'
-import React from 'react'
+import { View, Text, Button, TouchableOpacity, ScrollView } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import styled from "styled-components/native";
 import { useNavigation } from '@react-navigation/native';
+import { fetchChallenge } from '../db/api/challenge';
+import { Tables } from '../db/types/supabase';
 
 export default function ChallengeScreen() {
+  const [challenge, setChallenge] = useState<any>([]);
 
   const navigation = useNavigation();
 
   const addButtonHandler = () => {
-
     navigation.navigate('ChallengeCreate' as never)
   }
         
@@ -36,35 +38,53 @@ export default function ChallengeScreen() {
     },
   ]
 
+  useEffect(() => {
+    const getChallenges = async () => {
+      const challengeData = await fetchChallenge();
+      //console.log(challengeData);
+      setChallenge(challengeData);
+    };
+
+    getChallenges()
+  }, []);
+
   return (
-    <View>
-      <ListContainer>
+    <Container>
       <Text>최신순  |  공감순</Text>
-        <CardBox>
-          <CardItem>
-            <CardTop>
-              <ProfileImage/>
-              <Text>홍길동</Text>
-            </CardTop>
-            <ChallengeTitle>홍길동 자바 마스터 챌린지</ChallengeTitle>
-            <CardBottom>
-              <Text>작성일 : 2024.05.01</Text>
-              <Text>0</Text>
-            </CardBottom>
-          </CardItem>
-        </CardBox>
-      </ListContainer>
-      <CreateButton onPress={addButtonHandler}>
-        <Text style={{textAlign:'center'}}>추가</Text>
-      </CreateButton>
-    </View>
+      <ScrollView>
+      {challenge.length > 0 ? (
+        challenge.map((item : any) => (
+        <TouchableOpacity key={item.challenge_id} onPress={() => navigation.navigate('ChallengeCreate' as never)}>
+          <CardBox>
+            <CardItem>
+              <CardTop>
+                <ProfileImage/>
+                <Text>{item.user.username}</Text>
+              </CardTop>
+              <ChallengeTitle>{item.title}</ChallengeTitle>
+              <CardBottom>
+                <Text>작성일 : {item.start_date}</Text>
+                <Text>0</Text>
+              </CardBottom>
+            </CardItem>
+          </CardBox>
+        </TouchableOpacity>
+        ))
+        ) : (
+          <Text>데이터가 없습니다.</Text>
+        )}
+      </ScrollView>
+        <CreateButton onPress={addButtonHandler}>
+          <Text style={{textAlign:'center'}}>+</Text>
+        </CreateButton>
+    </Container>
   )
 }
 
 // ------------------- style ------------------- //
-const ListContainer = styled.View`
+const Container = styled.View`
   padding: 20px;
-`;
+`
 
 const CardBox = styled.View`
   background-color: #FFFFFF;
@@ -99,9 +119,13 @@ const CardBottom = styled.View`
 `;
 
 const CreateButton = styled.TouchableOpacity`
+  position: absolute;
+  right: 20px;
+  bottom: 40px;
   width: 50px;
   height: 50px;
   background-color: #FFBE98;
   border-radius: 25px;
   justify-content: center;
+  elevation: 3;
 `;
