@@ -1,50 +1,46 @@
-import React, {useState} from 'react';
-import {FlatList} from 'react-native';
-import styled from 'styled-components/native';
-import Page from './page';
+import React, { useState } from "react"
+import { FlatList } from "react-native"
+import styled from "styled-components/native"
+import Page from "./page"
 
 interface ICarousel {
-  gap: number;
-  offset: number;
-  pages: any[];
-  pageWidth: number;
+  gap: number
+  offset: number
+  pages: any[]
+  pageWidth: number
 }
 
 const Container = styled.View`
   height: 160px;
   justify-content: center;
   align-items: center;
-`;
+`
 
-const Indicator = styled.View<{focused: boolean}>`
+const Indicator = styled.View<{ focused: boolean }>`
   margin: 0px 4px;
-  background-color: ${(props:any) => (props.focused ? '#262626' : '#dfdfdf')};
+  background-color: ${(props: any) => (props.focused ? "#262626" : "#dfdfdf")};
   width: 6px;
   height: 6px;
   border-radius: 3px;
-`;
+`
 
 const IndicatorWrapper = styled.View`
   flex-direction: row;
   align-items: center;
   margin-top: 16px;
-`;
+`
 
-export default function Carousel({pages, pageWidth, gap, offset}: ICarousel) {
-  const [page, setPage] = useState(0);
+export default function Carousel({ pages, pageWidth, gap, offset }: ICarousel) {
+  const [page, setPage] = useState(0)
 
-  function renderItem({item}: any) {
-    return (
-      <Page item={item} style={{width: pageWidth, marginHorizontal: gap / 2}} />
-    );
+  function renderItem({ item }: any) {
+    return <Page item={item} style={{ width: pageWidth, marginHorizontal: gap / 2 }} />
   }
 
   const onScroll = (e: any) => {
-    const newPage = Math.round(
-      e.nativeEvent.contentOffset.x / (pageWidth + gap),
-    );
-    setPage(newPage);
-  };
+    const newPage = Math.round(e.nativeEvent.contentOffset.x / (pageWidth + gap))
+    setPage(newPage)
+  }
 
   return (
     <Container>
@@ -65,10 +61,10 @@ export default function Carousel({pages, pageWidth, gap, offset}: ICarousel) {
         showsHorizontalScrollIndicator={false}
       />
       <IndicatorWrapper>
-        {Array.from({length: pages.length}, (_, i) => i).map((i) => (
+        {Array.from({ length: pages.length }, (_, i) => i).map(i => (
           <Indicator key={`indicator_${i}`} focused={i === page} />
         ))}
       </IndicatorWrapper>
     </Container>
-  );
+  )
 }
