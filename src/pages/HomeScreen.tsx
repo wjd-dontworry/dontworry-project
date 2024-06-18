@@ -5,6 +5,7 @@ import styled from "styled-components/native"
 import Carousel from "../components/carousel"
 import { fetchChallengeById } from "../db/api/challenge"
 import { supabase } from "../db/supabase"
+import { DefaultTheme } from "styled-components/native"
 
 export default function HomeScreen() {
   const [challenge, setChallenge] = useState<Tables<"challenge">[]>([])
@@ -137,7 +138,7 @@ const WeekBox = styled.View`
 `
 
 const WeekDays = styled.Text`
-  background-color: #ffbe98;
+  background-color: ${({ theme } : DefaultTheme)=> theme.color.main};
   color: #ffffff;
   text-align: center;
   width: 20px;
@@ -146,7 +147,7 @@ const WeekDays = styled.Text`
 `
 
 const Weekend = styled.Text`
-  background-color: #ff8741;
+  background-color: ${({ theme } : DefaultTheme)=> theme.color.sub};
   color: #ffffff;
   text-align: center;
   width: 20px;

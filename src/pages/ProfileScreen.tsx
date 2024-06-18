@@ -28,7 +28,7 @@ export default function ProfileScreen() {
     }
 
     if (user) {
-      const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user.id)
+      const { error: deleteUserError } = await supabase.rpc('delete_user' as never);
       console.log({ deleteUserError })
       if (deleteUserError) alert("회원 탈퇴 중에 문제가 생겼습니다.")
       else {
