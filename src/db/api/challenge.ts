@@ -26,7 +26,8 @@ export const fetchChallengeById = async (userId : string) => {
     try {
         const challengeWithUserQuery = supabase
         .from('challenge')
-        .select('*,user(*)')
+        .select('*, user(*), challenge_like(*)')
+        .order('created_at', { ascending: false })
         type ChallengeWithUser = QueryData<typeof challengeWithUserQuery>
 
         const { data, error } = await challengeWithUserQuery
@@ -44,3 +45,103 @@ export const fetchChallengeById = async (userId : string) => {
       return [];
     }
   };
+
+  export const fetchChallengeByChallengeId = async (challengeId : number) => {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_task')
+        .select('*')
+        .eq('challenge_id', challengeId)
+        .returns<Tables<'challenge_task'>[]>();
+
+      if (error) {
+        console.log('Error :', error);
+        return [];
+      }
+
+      return data;
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return [];
+    }
+  };
+
+  export const fetchParticipationIdByUserIdAndChallengeId = async (userId : string, challengeId : number) => {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_participation')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .returns<Tables<'challenge_participation'>[]>();
+
+      if (error) {
+        console.log('Error :', error);
+        return 0;
+      }
+
+      if (data.length > 0) {
+        return data[0].participation_id;
+      }
+
+      return 0;
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return 0;
+    }
+  };
+
+  export const createChallengeLike = async (userId : string, challengeId : number) => {
+    try {
+        const { data, error } = await supabase
+        .from('challenge_like')
+        .insert([
+          { user_id: userId ,challenge_id: challengeId },
+        ])
+        .select('challenge_id')
+
+      if (error) {
+        console.log('Error :', error);
+        return [];
+      }
+
+      return data;
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return [];
+    }
+  };
+
+  export const deleteChallengeLike = async (userId : string, challengeId : number) => {
+    try {
+        const { error } = await supabase
+        .from('challenge_like')
+        .delete()
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+
+      if (error) {
+        console.log('Error :', error);
+      }
+
+    } catch (error) {
+      console.log('Catch Error :', error);
+    }
+  };
+
+  export const deleteChallenge = async (challengeId : number, userId : string) => {
+    try {
+      console.log(challengeId, userId);
+      const { error } = await supabase
+      .from('challenge')
+      .delete()
+      .eq('challenge_id', challengeId)
+      .eq('user_id', userId)
+    if (error) {
+      console.log('Error :', error);
+    }
+  } catch (error) {
+    console.log('Catch Error :', error);
+  }
+  }
+        

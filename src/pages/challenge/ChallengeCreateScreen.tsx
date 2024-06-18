@@ -1,18 +1,18 @@
-import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native'
+import { Text, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import styled from "styled-components/native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from 'react-native';
-import { supabase } from '../db/supabase';
-import { Tables } from '../db/types/supabase';
+import { supabase } from '../../db/supabase';
 import { useNavigation } from '@react-navigation/native';
+import {RootStackParamList} from '../../../types/navigation';
+import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
 
 export default function ChallengeCreateScreen() {
     const [title, setTitle] = useState('');
     const [userId, setUserId] = useState<string | undefined>();
     const [userUUID, setUserUUID] = useState<string | null>(null);
 
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const [challengeList, setChallengeList] = useState([
         {id:0, time:'', taskname:''}
@@ -45,7 +45,7 @@ export default function ChallengeCreateScreen() {
             const { data, error } = await supabase
             .from('challenge')
             .insert([
-              { title: title, start_date: '2024-05-01', end_date: '2024-05-31' ,user_id: userUUID },
+              { title: title ,user_id: userUUID },
             ])
             .select('challenge_id')
     
@@ -118,6 +118,7 @@ export default function ChallengeCreateScreen() {
         const challengeId = await getChallenges();
         if (challengeId) {
             await createTasks(challengeId, challengeList);
+            navigation.navigate('ChallengeDetail', {challengeId: challengeId as number, title: title as string})
         }
     }
     
