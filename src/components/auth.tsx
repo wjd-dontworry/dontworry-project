@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigation } from "@react-navigation/native"
-import { Alert, View, AppState, Button, TextInput, Text, TouchableOpacity } from "react-native"
+import { View, AppState, TextInput, Text, TouchableOpacity } from "react-native"
 import styled from "styled-components/native"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 
@@ -46,20 +46,24 @@ function Auth() {
     setLoading(false)
   }
 
-  //회원가입
-  async function signUpWithEmail() {
-    setLoading(true)
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+  // 소셜 로그인
+  async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
     })
-
-    if (error) Alert.alert(error.message)
-    if (!session) Alert.alert("Please check your inbox for email verification!")
-    setLoading(false)
+    if (data) alert("로그인 되었습니다.")
+    if (error) {
+      console.error("Google OAuth error:", error.message)
+      return
+    } else {
+      navigation.navigate("TabNavigator" as never)
+    }
   }
 
   // 이메일 형식이 올바른지 검사하는 함수
@@ -83,7 +87,7 @@ function Auth() {
       <BackIcon
         name="chevron-left"
         onPress={() => {
-          navigation.navigate("TabNavigator" as never)
+          navigation.navigate("Home" as never)
         }}
       />
       <LoginContainer>
@@ -110,7 +114,7 @@ function Auth() {
           </LoginButton>
         </ButtonContainer>
         <ButtonContainer>
-          <GoogleLoginButton disabled={loading} onPress={() => signInWithEmail()}>
+          <GoogleLoginButton disabled={loading} onPress={() => signInWithGoogle()}>
             <GoogleLoginButtonContainer>
               <GoogleIcon name="google" />
               <ButtonBlackText>Google로 시작하기</ButtonBlackText>
@@ -122,7 +126,11 @@ function Auth() {
           <QuestionText>계정이 없으신가요?</QuestionText>
         </QuestionContainer>
         <ButtonContainer>
-          <SignUpButton disabled={loading} onPress={() => signUpWithEmail()}>
+          <SignUpButton
+            disabled={loading}
+            onPress={() => {
+              navigation.navigate("SignUp" as never)
+            }}>
             <ButtonBlackText>회원가입</ButtonBlackText>
           </SignUpButton>
         </ButtonContainer>
