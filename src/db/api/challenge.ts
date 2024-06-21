@@ -22,23 +22,50 @@ export const fetchChallengeById = async (userId : string) => {
     }
   };
 
-  export const fetchChallenge = async () => {
+  export const fetchChallenge = async (orderBy: string, ascending: boolean) => {
     try {
-        const challengeWithUserQuery = supabase
+      const challengeWithUserQuery = supabase
         .from('challenge')
         .select('*, user(*), challenge_like(*)')
-        .order('created_at', { ascending: false })
-        type ChallengeWithUser = QueryData<typeof challengeWithUserQuery>
-
-        const { data, error } = await challengeWithUserQuery
-
+        .order(orderBy, { ascending });
+  
+      type ChallengeWithUser = QueryData<typeof challengeWithUserQuery>;
+  
+      const { data, error } = await challengeWithUserQuery;
+  
       if (error) {
         console.log('Error :', error);
         return [];
       }
+  
+      const challengeWithUser: ChallengeWithUser = data;
+      return challengeWithUser;
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return [];
+    }
+  };
 
-      const challengeWithUser: ChallengeWithUser = data
-      console.log(challengeWithUser);
+  export const fetchTop3Challenge = async () => {
+    try {
+      const challengeWithUserQuery = supabase
+        .from('challenge')
+        .select(
+          '*, user(*), challenge_like(*)'
+        )
+        .order('likes_count', { ascending : false })
+        .range(0, 2);
+  
+      type ChallengeWithUser = QueryData<typeof challengeWithUserQuery>;
+  
+      const { data, error } = await challengeWithUserQuery;
+  
+      if (error) {
+        console.log('Error :', error);
+        return [];
+      }
+  
+      const challengeWithUser: ChallengeWithUser = data;
       return challengeWithUser;
     } catch (error) {
       console.log('Catch Error :', error);

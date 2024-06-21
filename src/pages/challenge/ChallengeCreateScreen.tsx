@@ -251,9 +251,10 @@ const DeleteButton = styled.View`
 
 const AddButton = styled.View`
     background-color: #FFE6BF;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    elevation: 1;
     justify-content: center;
     align-items: center;
 `;

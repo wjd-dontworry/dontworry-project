@@ -52,7 +52,7 @@ export default function Carousel({ pages, pageWidth, gap, offset }: ICarousel) {
         data={pages}
         decelerationRate="fast"
         horizontal
-        keyExtractor={(item: any) => `page__${item.index}`}
+        keyExtractor={(item: any) => `page__${item.challenge_id}`}
         onScroll={onScroll}
         pagingEnabled
         renderItem={renderItem}

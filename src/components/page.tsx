@@ -1,9 +1,11 @@
 import React from "react"
 import styled from "styled-components/native"
-import { Text, ViewStyle } from "react-native"
+import { Text, View, ViewStyle } from "react-native"
+import moment from "moment"
+import OctiIcon from 'react-native-vector-icons/Octicons';
 
 interface IPage {
-  item: { title: string; writer: string; likeCount: number; writeDateTime: string; viewCount: number }
+  item: any
   style: ViewStyle
 }
 
@@ -43,6 +45,11 @@ const PageContent = styled.View`
   justify-content: space-between;
 `
 
+const LikeBox = styled.View`
+  display: flex;
+  flex-direction: row;
+`
+
 export default function Page({ item, style }: IPage) {
   return (
     <PageItem style={style}>
@@ -50,12 +57,12 @@ export default function Page({ item, style }: IPage) {
       <CardBox>
         <PageTitle>{item.title}</PageTitle>
         <PageContent>
-          <Text>{`작성자 ${item.writer}`}</Text>
-          <Text>{item.likeCount}</Text>
+          <Text>{`작성자 ${item.user.username}`}</Text>
+          <LikeBox><OctiIcon name={'heart-fill'} size={16} /><Text> {item.challenge_like.length}</Text></LikeBox>
         </PageContent>
         <PageContent>
-          <Text>{`작성일 ${item.writeDateTime}`}</Text>
-          <Text>{`조회수 ${item.viewCount}`}</Text>
+          <Text>{`작성일 ${moment(item.created_at).format('YYYY.MM.DD')}`}</Text>
+          <Text>{`조회수 0`}</Text>
         </PageContent>
       </CardBox>
     </PageItem>
