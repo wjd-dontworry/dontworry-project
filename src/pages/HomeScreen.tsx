@@ -1,44 +1,42 @@
-import { View, Text, Dimensions } from "react-native"
+import { View, Text, Dimensions, TouchableOpacity } from "react-native"
 import React, { useEffect, useState } from "react"
 import { Tables } from "../db/types/supabase"
 import styled from "styled-components/native"
 import Carousel from "../components/carousel"
-import { fetchChallengeById } from "../db/api/challenge"
+import { fetchChallengeById, fetchTop3Challenge } from "../db/api/challenge"
 import { supabase } from "../db/supabase"
 import { DefaultTheme } from "styled-components/native"
+import { useIsFocused, useNavigation } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { RootStackParamList } from "../../types/navigation"
 
 export default function HomeScreen() {
-  const [challenge, setChallenge] = useState<Tables<"challenge">[]>([])
-  const [userUUID, setUserUUID] = useState<string | null>(null)
+  const [mychallenge, setMyChallenge] = useState<Tables<"challenge">[]>([]);
+  const [top3Challenge, setTop3Challenge] = useState<any>([]);
+  const [userUUID, setUserUUID] = useState<string | null>(null);
+  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
+  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({});
+  const isFocused = useIsFocused();
 
-  //캐러셀
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
   const screenWidth = Math.round(Dimensions.get("window").width)
-  const PAGES = [
-    {
-      index: 1,
-      title: "홍길동 자바 마스터 챌린지",
-      writer: "홍길동",
-      likeCount: 0,
-      writeDateTime: "2024.05.10",
-      viewCount: 12,
-    },
-    {
-      index: 2,
-      title: "홍길동 자바 마스터 챌린지",
-      writer: "홍길동",
-      likeCount: 0,
-      writeDateTime: "2024.05.10",
-      viewCount: 12,
-    },
-    {
-      index: 3,
-      title: "홍길동 자바 마스터 챌린지",
-      writer: "홍길동",
-      likeCount: 0,
-      writeDateTime: "2024.05.10",
-      viewCount: 12,
-    },
-  ]
+
+  const getTop3Challenge = async () => {
+    const challengeData = await fetchTop3Challenge();
+    console.log(challengeData);
+
+    const newIsLiked: { [key: number]: boolean } = {};
+    const newLikeCount: { [key: number]: number } = {};
+    challengeData.forEach((challenge) => {
+      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === userUUID);
+      newLikeCount[challenge.challenge_id] = challenge.challenge_like.length;
+  });
+    setIsLiked(newIsLiked);
+    setLikeCount(newLikeCount);
+
+    setTop3Challenge(challengeData);
+  }
 
   const getUserUUID = async (): Promise<string | null> => {
     const {
@@ -52,37 +50,42 @@ export default function HomeScreen() {
     return user?.id || null
   }
 
+  const fetchUserUUID = async () => {
+    const uuid = await getUserUUID()
+    setUserUUID(uuid)
+
+    return uuid
+  }
+
+  const getMyChallenges = async (uuid: string | null) => {
+    if (uuid) {
+      const challengeData = await fetchChallengeById(uuid)
+      setMyChallenge(challengeData)
+    }
+  }
+
   useEffect(() => {
-    const fetchUserUUID = async () => {
-      const uuid = await getUserUUID()
-      setUserUUID(uuid)
-
-      return uuid
-    }
-
-    const getChallenges = async (uuid: string | null) => {
-      if (uuid) {
-        const challengeData = await fetchChallengeById(uuid)
-        console.log(challengeData)
-        setChallenge(challengeData)
-      }
-    }
-
-    fetchUserUUID().then(result => getChallenges(result))
-  }, [])
+    if (isFocused) {
+    getTop3Challenge();
+    fetchUserUUID().then(result => getMyChallenges(result))
+  }
+  }, [isFocused])
 
   return (
     <View>
       <View style={{ paddingLeft: 30 }}>
         <Title>Best Challenges!</Title>
       </View>
-      <Carousel gap={8} offset={8} pages={PAGES} pageWidth={screenWidth - (8 + 8) * 2} />
+      <Carousel gap={8} offset={8} pages={top3Challenge} pageWidth={screenWidth - (8 + 8) * 2} />
       <View style={{ paddingLeft: 30 }}>
         <Title>My Challenges!</Title>
       </View>
       <View style={{ padding: 15 }}>
-        {challenge.length > 0 ? (
-          challenge.map((item, index) => (
+        {mychallenge.length > 0 ? (
+          mychallenge.map((item, index) => (
+            <TouchableOpacity key={item.challenge_id} onPress={() => navigation.navigate('ChallengeDetail',
+              {challengeId: item.challenge_id as number, title: item.title as string})
+              }>
             <CardContainer key={index}>
               <CardItem>
                 <Text style={{ fontWeight: "bold", width: "35%", marginRight: "auto" }}>{item.title}</Text>
@@ -98,6 +101,7 @@ export default function HomeScreen() {
               </CardItem>
               <Circle />
             </CardContainer>
+            </TouchableOpacity>
           ))
         ) : (
           <Text>데이터가 없습니다.</Text>
