@@ -60,7 +60,7 @@ export default function SignUpScreen() {
         options: {
           data: {
             username: username,
-            proflie: "user-circle",
+            proflie_image: null,
           },
         },
       })

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
 import { useNavigation } from "@react-navigation/native"
-import { View, AppState, TextInput, Text, TouchableOpacity } from "react-native"
+import { View, AppState, TextInput, Text, TouchableOpacity, ActivityIndicator } from "react-native"
 import styled from "styled-components/native"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
-
 import { supabase } from "../db/supabase"
 
 AppState.addEventListener("change", state => {
@@ -48,21 +47,26 @@ function Auth() {
 
   // 소셜 로그인
   async function signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          queryParams: {
+            prompt: "select_account",
+          },
         },
-      },
-    })
-    if (data) alert("로그인 되었습니다.")
-    if (error) {
-      console.error("Google OAuth error:", error.message)
-      return
-    } else {
-      navigation.navigate("TabNavigator" as never)
+      })
+      if (error) {
+        console.error("Google OAuth error:", error.message)
+        setErrorMessage("Google OAuth error: " + error.message)
+      } else {
+        console.log("Google OAuth data:", data)
+        alert("로그인 되었습니다.")
+        navigation.navigate("TabNavigator" as never)
+      }
+    } catch (error) {
+      console.error("Google OAuth exception:", error)
+      setErrorMessage("Google OAuth exception: " + error)
     }
   }
 
