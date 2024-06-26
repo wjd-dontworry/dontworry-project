@@ -3,6 +3,10 @@ import styled from "styled-components/native"
 import { useNavigation, NavigationProp } from "@react-navigation/native"
 import { supabase } from "../db/supabase"
 import { View, Text, TouchableOpacity } from "react-native"
+import { AppDispatch, RootState } from "../redux/store"
+import { useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
+import { logout } from "../redux/actions/userActions"
 
 type RootStackParamList = {
   TabNavigator: undefined
@@ -12,31 +16,13 @@ type RootStackParamList = {
 
 export default function ProfileScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>()
-  const [user, setUser] = useState<any | null>(null)
+  const { user } = useSelector((state: RootState) => state.userReducer);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser()
-        if (error) {
-          console.error("Error fetching user:", error.message)
-          return
-        }
-        console.log("Logged in user:", data.user?.email)
-        setUser(data?.user ?? null)
-      } catch (error) {}
-    }
-
-    fetchUser()
-  }, [])
+  const dispatch: AppDispatch = useDispatch();
 
   const Logout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) alert("로그아웃 중에 문제가 생겼습니다.")
-    else {
-      alert("로그아웃 되었습니다")
+    dispatch(logout())
       navigation.navigate("Login")
-    }
   }
 
   const MemberOut = async () => {
@@ -52,8 +38,7 @@ export default function ProfileScreen() {
       }
 
       if (user) {
-        const { error: deleteUserError } = await supabase.rpc<void>("delete_user", { user_id: user.id })
-
+        const { error: deleteUserError } = await supabase.rpc("delete_user");
         if (deleteUserError) {
           console.error("회원 탈퇴 중에 문제가 생겼습니다:", deleteUserError.message)
         } else {

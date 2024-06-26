@@ -9,10 +9,16 @@ import ProfileScreen from "./pages/ProfileScreen"
 import ChallengeScreen from "./pages/challenge/ChallengeScreen"
 import ChallengeCreateScreen from "./pages/challenge/ChallengeCreateScreen"
 import ChallengeDetailScreen from "./pages/challenge/ChallengeDetailScreen"
+import BoardScreen from "./pages/board/BoardScreen"
+import BoardCreateScreen from "./pages/board/BoardCreateScreen"
+import BoardDetailScreen from "./pages/board/BoardDetailScreen"
 import AntDesignIcon from "react-native-vector-icons/AntDesign"
 import OctIcon from "react-native-vector-icons/Octicons"
 import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { AppDispatch } from "./redux/store"
+import { fetchUser } from "./redux/actions/userActions"
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -64,7 +70,7 @@ function TabNavigator() {
       />
       <Tab.Screen
         name="Board"
-        component={ChallengeScreen}
+        component={BoardScreen}
         options={{
           tabBarIcon: ({ focused }) => <MaterialCommunityIcon name="forum-outline" style={{ color: focused ? "#ffbe98" : "#404040" }} size={30} />,
           title: "게시판",
@@ -91,6 +97,14 @@ function TabNavigator() {
 }
 
 export default function Navigation() {
+
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    //유저 정보 주입
+    dispatch(fetchUser());
+  }, [dispatch])
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: true }}>
@@ -100,6 +114,8 @@ export default function Navigation() {
         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCreate" component={ChallengeCreateScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} options={{ headerShown: true, title: "챌린지 상세보기", headerTitleAlign: "center" }} />
+        <Stack.Screen name="BoardCreate" component={BoardCreateScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BoardDetail" component={BoardDetailScreen} options={{ headerShown: true, title: "게시판 상세보기", headerTitleAlign: "center" }} />
       </Stack.Navigator>
     </NavigationContainer>
   )

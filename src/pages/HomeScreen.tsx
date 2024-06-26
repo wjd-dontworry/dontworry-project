@@ -1,22 +1,21 @@
 import { View, Text, Dimensions, TouchableOpacity } from "react-native"
 import React, { useEffect, useState } from "react"
-import { Tables } from "../db/types/supabase"
 import styled from "styled-components/native"
 import Carousel from "../components/carousel"
-import { fetchChallengeById, fetchTop3Challenge } from "../db/api/challenge"
-import { supabase } from "../db/supabase"
+import { fetchParticipationIdByUserId, fetchTop3Challenge } from "../db/api/challenge"
 import { DefaultTheme } from "styled-components/native"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { RootStackParamList } from "../../types/navigation"
+import { RootStackParamList } from "../types/navigation"
+import { RootState } from "../redux/store"
+import { useSelector } from "react-redux"
 
 export default function HomeScreen() {
-  const [mychallenge, setMyChallenge] = useState<Tables<"challenge">[]>([]);
+  const [mychallenge, setMyChallenge] = useState<any>([]);
   const [top3Challenge, setTop3Challenge] = useState<any>([]);
-  const [userUUID, setUserUUID] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
-  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({});
   const isFocused = useIsFocused();
+
+  const { user } = useSelector((state: RootState) => state.userReducer);
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
@@ -24,52 +23,30 @@ export default function HomeScreen() {
 
   const getTop3Challenge = async () => {
     const challengeData = await fetchTop3Challenge();
-    console.log(challengeData);
 
     const newIsLiked: { [key: number]: boolean } = {};
     const newLikeCount: { [key: number]: number } = {};
     challengeData.forEach((challenge) => {
-      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === userUUID);
+      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === user?.id);
       newLikeCount[challenge.challenge_id] = challenge.challenge_like.length;
   });
-    setIsLiked(newIsLiked);
-    setLikeCount(newLikeCount);
 
     setTop3Challenge(challengeData);
   }
 
-  const getUserUUID = async (): Promise<string | null> => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser()
-    if (error) {
-      console.error("Error fetching user:", error)
-      return null
-    }
-    return user?.id || null
-  }
-
-  const fetchUserUUID = async () => {
-    const uuid = await getUserUUID()
-    setUserUUID(uuid)
-
-    return uuid
-  }
-
   const getMyChallenges = async (uuid: string | null) => {
     if (uuid) {
-      const challengeData = await fetchChallengeById(uuid)
+      const challengeData = await fetchParticipationIdByUserId(uuid);
       setMyChallenge(challengeData)
     }
   }
 
   useEffect(() => {
-    if (isFocused) {
-    getTop3Challenge();
-    fetchUserUUID().then(result => getMyChallenges(result))
-  }
-  }, [isFocused])
+    if (user) {
+      getTop3Challenge();
+      getMyChallenges(user.id);
+    }
+  }, [user]);
 
   return (
     <View>
@@ -82,13 +59,13 @@ export default function HomeScreen() {
       </View>
       <View style={{ padding: 15 }}>
         {mychallenge.length > 0 ? (
-          mychallenge.map((item, index) => (
-            <TouchableOpacity key={item.challenge_id} onPress={() => navigation.navigate('ChallengeDetail',
-              {challengeId: item.challenge_id as number, title: item.title as string})
+          mychallenge.map((item : any, index : number) => (
+            <TouchableOpacity key={item.challenge.challenge_id} onPress={() => navigation.navigate('ChallengeDetail',
+              {challengeId: item.challenge.challenge_id as number, title: item.challenge.title as string})
               }>
             <CardContainer key={index}>
               <CardItem>
-                <Text style={{ fontWeight: "bold", width: "35%", marginRight: "auto" }}>{item.title}</Text>
+                <Text style={{ fontWeight: "bold", width: "35%", marginRight: "auto" }}>{item.challenge.title}</Text>
                 <WeekBox>
                   <Weekend>일</Weekend>
                   <WeekDays>월</WeekDays>
@@ -104,7 +81,16 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))
         ) : (
-          <Text>데이터가 없습니다.</Text>
+          <EmptyCardContainer>
+              <EmptyCardItem>
+                <Text style={{ fontWeight: "bold"}}>현재, 참여하고 있는 챌린지가 없습니다.</Text>
+                <Text style={{ fontWeight: "bold"}}>챌린지에 도전해보세요!</Text>
+                <ChallengeButton>
+                  <Text style={{color:'#FFFFFF'}}>도전</Text>
+                </ChallengeButton>
+              </EmptyCardItem>
+              <EmptyCircle />
+            </EmptyCardContainer>
         )}
       </View>
     </View>
@@ -133,6 +119,22 @@ const CardItem = styled.View`
   padding: 30px 20px 30px 20px;
   display: flex;
   flex-direction: row;
+`
+
+const EmptyCardContainer = styled.View`
+  background-color: #ffffff;
+  border-radius: 20px;
+  elevation: 1;
+  margin-bottom: 10px;
+  overflow: hidden;
+`
+
+const EmptyCardItem = styled.View`
+  padding: 30px 20px 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 `
 
 const WeekBox = styled.View`
@@ -164,4 +166,23 @@ const Circle = styled.View`
   height: 100%;
   border-radius: 50px;
   background-color: #ffeee5;
+  position: absolute;
+  right: -7%;
 `
+
+const EmptyCircle = styled.View`
+  width: 40%;
+  height: 100%;
+  border-radius: 300px;
+  background-color: #ffeee5;
+  position: absolute;
+  right: -20%;
+`
+
+const ChallengeButton = styled.TouchableOpacity`
+    padding: 5px 30px;
+    background-color: #FFBE98;
+    border-radius: 15px;
+    height: 35px;
+    width: 90px;
+`;

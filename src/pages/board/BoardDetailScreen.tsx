@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import moment, { now } from 'moment';
 
-export default function ChallengeCreateScreen() {
+export default function BoardCreateScreen() {
     const [challengeTask, setChallengeTask] = useState<any>([]);
     const [challengeUser, setChallengeUser] = useState<any>([]);
 

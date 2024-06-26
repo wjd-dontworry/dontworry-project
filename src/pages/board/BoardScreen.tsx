@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ChallengeWithUser, fetchChallenge } from '../../redux/actions/challengeActions';
 import { RootState, AppDispatch } from '../../redux/store';
 
-export default function ChallengeScreen() {
+export default function BoardScreen() {
   const [challenge, setChallenge] = useState<ChallengeWithUser[]>([]);
   const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
   const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({});
@@ -25,7 +25,7 @@ export default function ChallengeScreen() {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const addButtonHandler = () => {
-    navigation.navigate("ChallengeCreate" as never)
+    navigation.navigate("BoardCreate" as never)
   }
 
   const getChallenges = async (orderBy: string, ascending: boolean) => {

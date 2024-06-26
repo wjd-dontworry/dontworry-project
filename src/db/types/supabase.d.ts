@@ -9,6 +9,7 @@ export type Database = {
           created_at: string | null
           title: string | null
           user_id: string | null
+          likes_count: number | null
         }
         Insert: {
           challenge_id?: number
@@ -101,6 +102,35 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      challenge_record: {
+        Row: {
+          date: string
+          id: number
+          isSuccess: boolean | null
+          participation_id: number | null
+        }
+        Insert: {
+          date: string
+          id?: number
+          isSuccess?: boolean | null
+          participation_id?: number | null
+        }
+        Update: {
+          date?: string
+          id?: number
+          isSuccess?: boolean | null
+          participation_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_record_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_participation"
+            referencedColumns: ["participation_id"]
           },
         ]
       }
@@ -310,7 +340,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_user: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      likes_count: {
+        Args: {
+          "": unknown
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
