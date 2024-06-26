@@ -9,7 +9,7 @@ import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/n
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 
-export default function ChallengeCreateScreen() {
+export default function BoardCreateScreen() {
     const [title, setTitle] = useState('');
 
     const { user } = useSelector((state: RootState) => state.userReducer);

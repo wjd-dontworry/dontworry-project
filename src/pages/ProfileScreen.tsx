@@ -1,18 +1,28 @@
 import React from "react"
 import styled from "styled-components/native"
-import { useNavigation } from "@react-navigation/native"
+import { NavigationProp, useNavigation } from "@react-navigation/native"
 import { supabase } from "../db/supabase"
+import { View, Text, TouchableOpacity } from "react-native"
+import { AppDispatch, RootState } from "../redux/store"
+import { useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
+import { logout } from "../redux/actions/userActions"
+
+type RootStackParamList = {
+  TabNavigator: undefined
+  Login: undefined
+  UserUpdate: undefined
+}
 
 export default function ProfileScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>()
+  const { user } = useSelector((state: RootState) => state.userReducer);
+
+  const dispatch: AppDispatch = useDispatch();
 
   const Logout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) alert("로그아웃 중에 문제가 생겼습니다.")
-    else {
-      alert("로그아웃 되었습니다")
-      navigation.navigate("Login" as never)
-    }
+    dispatch(logout())
+    navigation.navigate("Login")
   }
 
   const MemberOut = async () => {

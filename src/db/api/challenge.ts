@@ -1,4 +1,4 @@
-import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
+import { QueryData } from '@supabase/supabase-js'
 import { supabase } from '../supabase';
 import { Tables } from '../types/supabase';
 
@@ -66,6 +66,7 @@ export const fetchChallengeById = async (userId : string) => {
       }
   
       const challengeWithUser: ChallengeWithUser = data;
+      console.log(data);
       return challengeWithUser;
     } catch (error) {
       console.log('Catch Error :', error);
@@ -73,25 +74,30 @@ export const fetchChallengeById = async (userId : string) => {
     }
   };
 
-  export const fetchChallengeByChallengeId = async (challengeId : number) => {
+   export const fetchChallengeByChallengeId = async (challengeId : number) => {
     try {
-      const { data, error } = await supabase
-        .from('challenge_task')
-        .select('*')
+      const challengeWithUserQuery = supabase
+        .from('challenge')
+        .select('*, user(*), challenge_task(*)')
         .eq('challenge_id', challengeId)
-        .returns<Tables<'challenge_task'>[]>();
-
+        .single()
+  
+      type ChallengeWithUser = QueryData<typeof challengeWithUserQuery>;
+  
+      const { data, error } = await challengeWithUserQuery;
+  
       if (error) {
         console.log('Error :', error);
-        return [];
+        return null;
       }
-
-      return data;
+  
+      const challengeWithUser: ChallengeWithUser = data;
+      return challengeWithUser;
     } catch (error) {
       console.log('Catch Error :', error);
-      return [];
+      return null;
     }
-  };
+   };
 
   export const fetchParticipationIdByUserIdAndChallengeId = async (userId : string, challengeId : number) => {
     try {
@@ -100,21 +106,41 @@ export const fetchChallengeById = async (userId : string) => {
         .select('*')
         .eq('user_id', userId)
         .eq('challenge_id', challengeId)
-        .returns<Tables<'challenge_participation'>[]>();
+        .returns<Tables<'challenge_participation'>>()
+        .single()
+
+      if (error) {
+        if(error.message !== "JSON object requested, multiple (or no) rows returned")
+        console.log('Error :', error);
+        return {};
+      }
+
+        return data;
+
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return {};
+    }
+  };
+
+  export const fetchParticipationIdByUserId = async (userId : string) => {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_participation')
+        .select('challenge(*)')
+        .eq('user_id', userId)
+        .returns<Tables<'challenge'>[]>()
 
       if (error) {
         console.log('Error :', error);
-        return 0;
+        return [];
       }
+      console.log(data);
+        return data;
 
-      if (data.length > 0) {
-        return data[0].participation_id;
-      }
-
-      return 0;
     } catch (error) {
       console.log('Catch Error :', error);
-      return 0;
+      return [];
     }
   };
 
@@ -171,4 +197,23 @@ export const fetchChallengeById = async (userId : string) => {
     console.log('Catch Error :', error);
   }
   }
-        
+
+  export const createChallengeRecord = async (date : string, isSuccess : boolean, participation_id : number) => {
+    try {
+        const { data, error } = await supabase
+        .from('challenge_record')
+        .insert([
+          { date: date ,isSuccess: isSuccess, participation_id: participation_id },
+        ])
+
+      if (error) {
+        console.log('Error :', error);
+        return [];
+      }
+
+      return data;
+    } catch (error) {
+      console.log('Catch Error :', error);
+      return [];
+    }
+  };
