@@ -15,7 +15,7 @@ export default function UserUpdateScreen() {
   const [currentPassword, setCurrentPassword] = useState<string>("")
   const [newPassword, setNewPassword] = useState<string>("")
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>("")
-  const [nickname, setNickname] = useState<string>("")
+  const [newNickname, setNewNickname] = useState<string>("")
   const [wrongMessage, setWrongMessage] = useState<string>("")
   const [incorrectMessage, setIncorrectMessage] = useState<string>("")
 
@@ -31,8 +31,9 @@ export default function UserUpdateScreen() {
           console.error("Error fetching user:", error.message)
           return
         }
-        console.log("Logged in user:", data.user?.email)
+        console.log("Logged in user:")
         setUser(data?.user ?? null)
+        setNewNickname(data?.user?.user_metadata.username ?? "")
       } catch (error) {}
     }
 
@@ -89,7 +90,7 @@ export default function UserUpdateScreen() {
         <InputContainer>
           <InputLabel>닉네임</InputLabel>
           <InputTextContainer>
-            <StyledTextInput onChangeText={(text: string) => setNickname(text)} value={nickname} placeholder="변경할 닉네임을 입력하세요." autoCapitalize={"none"} />
+            <StyledTextInput onChangeText={(text: string) => setNewNickname(text)} value={newNickname} placeholder="변경할 닉네임을 입력하세요." autoCapitalize={"none"} />
           </InputTextContainer>
           <InputLabel>이메일</InputLabel>
           <InputTextContainer>
@@ -130,13 +131,11 @@ export default function UserUpdateScreen() {
           </SaveButton>
         </ButtonContainer>
         <ButtonContainer>
-          <CancleButton>
-            <ButtonBlackText
-              onPress={() => {
-                navigation.navigate("Profile")
-              }}>
-              취소
-            </ButtonBlackText>
+          <CancleButton
+            onPress={() => {
+              navigation.navigate("Profile")
+            }}>
+            <ButtonBlackText>취소</ButtonBlackText>
           </CancleButton>
         </ButtonContainer>
       </UserUpdateContainer>

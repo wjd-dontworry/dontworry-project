@@ -15,8 +15,9 @@ import BoardDetailScreen from "./pages/board/BoardDetailScreen"
 import AntDesignIcon from "react-native-vector-icons/AntDesign"
 import OctIcon from "react-native-vector-icons/Octicons"
 import MaterialCommunityIcon from "react-native-vector-icons/MaterialCommunityIcons"
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
+
+import { useDispatch } from "react-redux"
+import { useEffect } from "react"
 import { AppDispatch } from "./redux/store"
 import { fetchUser } from "./redux/actions/userActions"
 
@@ -97,12 +98,11 @@ function TabNavigator() {
 }
 
 export default function Navigation() {
-
-  const dispatch: AppDispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch()
 
   useEffect(() => {
     //유저 정보 주입
-    dispatch(fetchUser());
+    dispatch(fetchUser())
   }, [dispatch])
 
   return (
