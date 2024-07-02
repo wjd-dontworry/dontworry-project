@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, ScrollView } from 'react-native'
+import { Text, TouchableOpacity, ScrollView, Button, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import styled from "styled-components/native";
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -21,7 +21,8 @@ export default function ChallengeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const dispatch: AppDispatch = useDispatch();
-  const { data, error } = useSelector((state: RootState) => state.challengeReducer);
+  const { data, error } = useSelector((state: RootState) => {
+    return state.challengeReducer});
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const addButtonHandler = () => {
@@ -42,6 +43,11 @@ export default function ChallengeScreen() {
     setLikeCount(newLikeCount);
 
     setChallenge(challengeData);
+  }
+
+  function aa () {
+    console.log(data);
+    console.log(challenge.length);
   }
 
 const likeButtonHandler = async (challenge: any) => {
@@ -91,7 +97,7 @@ const handlePress = (item: any) => {
         <Text>공감순</Text>
       </TouchableOpacity>
       </SortBox>
-      {challenge.length > 0 ? (
+      {data.length > 0 ? (
       <ChallengeScrollView
         data={data}
         keyExtractor={(item : ChallengeWithUser) => item.challenge_id}
@@ -122,7 +128,10 @@ const handlePress = (item: any) => {
         </TouchableOpacity>
         )}/>
         ) : (
+          <View>
           <Text>데이터가 없습니다.</Text>
+          <Button title='aa' onPress={aa}></Button>
+          </View>
         )}
       <CreateButton onPress={addButtonHandler}>
         <OctiIcon name='plus' size={32}/>

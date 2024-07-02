@@ -25,9 +25,9 @@ export type User = {
     type: 'SET_GUEST',
   });
 
-  export type UserAction = SetUserAction | SetGuestAction;
+  export type UserActions = SetUserAction | SetGuestAction;
 
-  export const fetchUser = () => async (dispatch: Dispatch<UserAction>) => {
+  export const fetchUser = () => async (dispatch: Dispatch<UserActions>) => {
     try {
       const { data, error } = await supabase.auth.getUser();
       if (error) {
@@ -42,7 +42,7 @@ export type User = {
     }
   };
   
-  export const logout = () => async (dispatch: Dispatch<UserAction>) => {
+  export const logout = () => async (dispatch: Dispatch<UserActions>) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {

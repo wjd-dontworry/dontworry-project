@@ -110,15 +110,15 @@ export default function ProfileScreen() {
           </View>
         </UserInfoBox>
         <ButtonBox>
-          <Button onPress={() => Logout()} style={{ flexDirection: "row", gap: "10" }}>
+          <Button onPress={() => Logout()} style={{ flexDirection: "row"}}>
             <Text>로그아웃</Text>
             <Icon name="chevron-right" size={16} />
           </Button>
-          <Button onPress={() => MemberOut()} style={{ flexDirection: "row", gap: "10" }}>
+          <Button onPress={() => MemberOut()} style={{ flexDirection: "row" }}>
             <Text>회원탈퇴</Text>
             <Icon name="chevron-right" size={16} />
           </Button>
-          <Button onPress={() => navigation.navigate("UserUpdate")} style={{ flexDirection: "row", gap: "10" }}>
+          <Button onPress={() => navigation.navigate("UserUpdate")} style={{ flexDirection: "row"}}>
             <Text>회원정보 수정</Text>
             <Icon name="chevron-right" size={16} />
           </Button>

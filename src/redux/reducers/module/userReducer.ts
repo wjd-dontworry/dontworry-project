@@ -1,10 +1,10 @@
-import { User, UserAction } from '../../actions/userActions';
+import { User, UserActions } from '../../actions/userActions';
 
 const initialState: { user: User | 'guest' | null } = {
   user: null,
 };
 
-const userReducer = (state = initialState, action: UserAction): { user: User | 'guest' | null } => {
+const userReducer = (state = initialState, action: UserActions): { user: User | 'guest' | null } => {
   switch (action.type) {
     case 'SET_USER':
       return {

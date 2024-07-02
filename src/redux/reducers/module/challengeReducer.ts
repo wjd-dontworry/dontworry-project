@@ -19,7 +19,7 @@ export const challengeReducer = (
     case 'FETCH_CHALLENGE_FAILURE':
       return {
         ...state,
-        data: [],
+        data: [], 
         error: action.payload,
       };
     default:
