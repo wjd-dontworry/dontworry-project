@@ -39,13 +39,14 @@
 <h2>🏅페이지 소개</h2>
 <div>
   <h5> 🎊 메인 페이지: 공감 수가 가장 많은 챌린지가 메인에 랭킹과 현재 내가 도전하고 있는 챌린지 현황을 확인 할 수 있습니다. </h5>
-     <img width="600" alt="main" src="https://github.com/wjd-dontworry/dontworry-project/assets/53931787/2fac89b6-4187-4d58-828f-de30a069eb3b">
+    <img width="600" alt="스크린샷 2024-06-26 오후 10 49 29" src="https://github.com/wjd-dontworry/dontworry-project/assets/53931787/74bb41c3-18ed-4308-a3d2-c05c93effe2c">
      <br>
 <br>
  <h5>  🎊챌린지 페이지 : 비슷한 고민을 가지고 있는 사람들이 도전할 수 있는 챌린지들과 내가 챌린지를 새로 등록할 수 있습니다.  </h5>
    <img width="600" alt="스크린샷 2024-06-26 오후 11 04 25" src="https://github.com/wjd-dontworry/dontworry-project/assets/53931787/1e75a29e-d340-4c9f-84ba-4e49d95b1f30">
 <br>
 <br>
+
   <h5> 🎊게시판 페이지 : 고민이 있는 사람들이 게시판을 활용해 등록을 하면 나와 비슷한 고민들을 확인 할 수 있습니다. </h5>
    <img width="600" alt="스크린샷 2024-06-26 오후 11 04 32" src="https://github.com/wjd-dontworry/dontworry-project/assets/53931787/a4eb976c-f9c1-4294-9b64-5c0a6f823a92">
   <br>
