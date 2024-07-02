@@ -1,160 +1,79 @@
-import { Text, ScrollView, TouchableOpacity } from 'react-native'
+import { Text } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import styled from "styled-components/native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../db/supabase';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import {RootStackParamList} from '../../types/navigation';
 import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
+import { AppDispatch, RootState } from '../../redux/store';
+import { createBoard, updateBoard } from '../../redux/actions/boardActions';
+import { useDispatch } from 'react-redux';
 
 export default function BoardCreateScreen() {
-    const [title, setTitle] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const dispatch: AppDispatch = useDispatch();
 
-    const { user } = useSelector((state: RootState) => state.userReducer);
+  const { user } = useSelector((state: RootState) => state.userReducer);
 
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-    const [challengeList, setChallengeList] = useState([
-        {id:0, time:'', taskname:''}
-    ]);
+  const route = useRoute<RouteProp<RootStackParamList, "BoardCreate">>();
 
-    const onChangeItemInput = (id: number, name: string, value: string) => {
-        setChallengeList(challengeList.map(item =>
-            item.id === id ? { ...item, [name]: value } : item
-        ));
-    };
-
-    const removeChallenge = (id: number) => {
-        setChallengeList(challengeList.filter(item => item.id !== id));
-    };
-
-    const addChallenge = () => {
-        const lastId = challengeList.length > 0 ? challengeList[challengeList.length - 1].id : 0;
-        setChallengeList([
-            ...challengeList,
-            {
-                id: lastId + 1,
-                time: '',
-                taskname: ''
-            }
-        ]);
-    }
-
-    const createChallenge = async () => {
-        try {
-            const { data, error } = await supabase
-            .from('challenge')
-            .insert([
-              { title: title ,user_id: user?.id },
-            ])
-            .select('challenge_id')
-    
-          if (error) {
-            console.log('Error :', error);
-            return [];
-          }
-    
-          return data;
-        } catch (error) {
-          console.log('Catch Error :', error);
-          return [];
-        }
-      };
-
-      const createTasks = async (challengeId: number, tasks: Array<{ time: string; taskname: string }>) => {
-        try {
-          const inserts = tasks.map(task => ({
-            taskname: task.taskname,
-            time: task.time,
-            challenge_id: challengeId,
-          }));
-      
-          const { data, error } = await supabase
-            .from('challenge_task')
-            .insert(inserts);
-      
-          if (error) {
-            console.log('Error :', error);
-            return [];
-          }
-      
-          return data;
-        } catch (error) {
-          console.log('Catch Error :', error);
-          return [];
-        }
-      };
-
-      const getChallenges = async () => {
-        const challengeData = await createChallenge();
-        if(challengeData.length > 0) {
-            console.log(challengeData[0].challenge_id);
-            return challengeData[0].challenge_id;
-        } else {
-            console.error('No challenge data found');
-            return null;
-        }
-    };
-
-      const submit = async () => {
-        const challengeId = await getChallenges();
-        if (challengeId) {
-            await createTasks(challengeId, challengeList);
-            navigation.navigate('ChallengeDetail', {challengeId: challengeId as number, title: title as string})
+  const submit = async () => {
+    if(route.params){
+        const boardId = route.params.board_id;
+        console.log(boardId);
+        dispatch(updateBoard(boardId, title, content));
+    }else {
+        if (title && content && user.id) {
+          dispatch(createBoard(title, content, user.id));
         }
     }
     
+    navigation.navigate('Board');
+  };
+
+  useEffect(() => {
+      if(route.params){
+        setTitle(route.params.title!)
+        setContent(route.params.content!)
+    }
+  }, [])
+  
 
   return (
-    <Container>
+      <Container>
           <SafeAreaView>
-            <TopBox>
-                <TitleInput placeholder='제목을 입력하세요' value={title} onChangeText={setTitle}/>
-                <BottomBorder/>
-            </TopBox>
-            <MiddleBox>
-                <TimeTableHeader>
-                    <Text>시간</Text>
-                    <Text>챌린지</Text>
-                </TimeTableHeader>
-                <ScrollView>
-                {challengeList.map((item, index) => (
-                    <TimeTableBody key={item.id}>
-                        <TimeInput
-                            value={item.time}
-                            onChangeText={(value:string) => onChangeItemInput(item.id, 'time', value)}
-                        />
-                        <ChallengeInput
-                            value={item.taskname}
-                            onChangeText={(value:string) => onChangeItemInput(item.id, 'taskname', value)}
-                        />
-                        <TouchableOpacity onPress={() => removeChallenge(item.id)}>
-                          <DeleteButton>
-                            <Text>-</Text>
-                          </DeleteButton>
-                        </TouchableOpacity>
-                    </TimeTableBody>
-                ))}
-                <TouchableOpacity onPress={addChallenge} style={{alignItems:'center'}}>
-                  <AddButton>
-                    <Text>+</Text>
-                  </AddButton>
-                </TouchableOpacity>
-                </ScrollView>
-            </MiddleBox>
-            <BottomBox>
-                <SubmitButton onPress={submit}>
-                    <Text style={{color:'#FFFFFF'}}>등록</Text>
-                </SubmitButton>
-                <CancelButton onPress={() => navigation.goBack()}>
-                    <Text>취소</Text>
-                </CancelButton>
-            </BottomBox>
-    </SafeAreaView>
-        </Container>
-  )
+              <TopBox>
+                  <TitleInput
+                      placeholder="제목을 입력하세요"
+                      value={title}
+                      onChangeText={setTitle}
+                  />
+                  <BottomBorder />
+              </TopBox>
+              <MiddleBox>
+                  <ContentInput
+                      multiline={true}
+                      textAlignVertical="top"
+                      placeholder="내용을 입력하세요"
+                      value={content}
+                      onChangeText={setContent}
+                  />
+              </MiddleBox>
+              <BottomBox>
+                  <SubmitButton onPress={submit}>
+                      <Text style={{ color: '#FFFFFF' }}>등록</Text>
+                  </SubmitButton>
+                  <CancelButton onPress={() => navigation.goBack()}>
+                      <Text>취소</Text>
+                  </CancelButton>
+              </BottomBox>
+          </SafeAreaView>
+      </Container>
+  );
 }
 
 // ------------------- style ------------------- //
@@ -192,55 +111,13 @@ const BottomBorder = styled.View`
   border: 0.5px gray;
 `;
 
-const TimeTableHeader = styled.View`
-    display: flex;
-    flex-direction: row;
-    gap: 55px;
-`;
-
-const TimeTableBody = styled.View`
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin-bottom: 5px;
-`;
-
-const TimeInput = styled.TextInput`
-    width: 20%;
-    font-size: 16px;
-    padding: 5px 10px;
+const ContentInput = styled.TextInput`
+    font-size: 18px;
+    padding: 20px;
+    min-height: 75%;
 
     border: 0.5px gray;
-    background-color:#FFF6F1;
-    border-radius: 5px;
-`;
-
-const ChallengeInput = styled.TextInput`
-    width: 65%;
-    font-size: 16px;
-    padding: 5px 10px;
-
-    border: 0.5px gray;
-    border-radius: 5px;
-`;
-
-const DeleteButton = styled.View`
-    background-color: #FFE6BF;
-    width: 30px;
-    height: 40px;
-    border-radius: 5px;
-    justify-content: center;
-    align-items: center;
-`;
-
-const AddButton = styled.View`
-    background-color: #FFE6BF;
-    width: 50px;
-    height: 50px;
-    border-radius: 25px;
-    elevation: 1;
-    justify-content: center;
-    align-items: center;
+    border-radius: 10px;
 `;
 
 const SubmitButton = styled.TouchableOpacity`

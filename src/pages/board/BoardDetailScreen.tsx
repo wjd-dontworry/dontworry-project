@@ -1,104 +1,46 @@
-import { Text, ScrollView, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Text } from 'react-native'
+import React, { useState } from 'react'
 import styled from "styled-components/native";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../db/supabase';
 import { useNavigation } from '@react-navigation/native';
 import {RouteProp, useRoute} from '@react-navigation/native';
 import { RootStackParamList } from '../../types/navigation';
-import { createChallengeRecord, deleteChallenge ,deleteChallengeLike, fetchChallengeByChallengeId, fetchParticipationIdByUserIdAndChallengeId } from '../../db/api/challenge';
-import { Tables } from '../../db/types/supabase';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
-import moment, { now } from 'moment';
+import { AppDispatch, RootState } from '../../redux/store';
+import { deleteBoard } from '../../redux/actions/boardActions';
+import { useDispatch } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export default function BoardCreateScreen() {
-    const [challengeTask, setChallengeTask] = useState<any>([]);
-    const [challengeUser, setChallengeUser] = useState<any>([]);
+export default function BoardDetailScreen() {
+    const dispatch: AppDispatch = useDispatch();
 
-    const [participationData, setParticipationData] = useState<any>();
+    const route = useRoute<RouteProp<RootStackParamList, "BoardDetail">>();
 
-    const route = useRoute<RouteProp<RootStackParamList, "ChallengeDetail">>();
-
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const { user } = useSelector((state: RootState) => state.userReducer);
 
-    const createParticipation = async () => {
-        try {
-            const { data, error } = await supabase
-            .from('challenge_participation')
-            .insert([
-              {start_date: '2024-05-01', end_date: '2024-05-31' ,user_id: user?.id, challenge_id: route.params!.challengeId },
-            ])
-    
-          if (error) {
-            console.log('Error :', error);
-            return [];
-          }
-    
-        } catch (error) {
-          console.log('Catch Error :', error);
-          return [];
-        }
-      };
-      
-      const submit = async () => {
-        if(participationData?.participation_id == null){
-          await createParticipation();
-          alert('도전을 시작합니다.');
-          navigation.navigate('Home' as never)
-        }else{
-          await createChallengeRecord(moment().format('YYYY-MM-DD'),true,participationData?.participation_id);
-          alert('성공으로 기록 완료');
-        }
+    const updateHandler = () => {
+        navigation.navigate('BoardCreate', { ...route.params });
     }
 
-    const fetchData = async () => {
-      // 챌린지 가져오기
-      const challengeData = await fetchChallengeByChallengeId(route.params!.challengeId);
-      setChallengeTask(challengeData?.challenge_task);
-      
-      // 유저 가져오기
-      setChallengeUser(challengeData?.user);
-
-      // 챌린지 참여 가져오기
-      const participationData = await fetchParticipationIdByUserIdAndChallengeId(user?.id as string, route.params!.challengeId);
-      setParticipationData(participationData);
-    };
-
-    const deleteChallengeHandler = () => {
-      deleteChallenge(route.params?.challengeId, user?.id as string);
-      alert('삭제되었습니다.');
-      navigation.goBack();
+    const deleteHandler = () => {
+        dispatch(deleteBoard(route.params.board_id))
+        navigation.navigate('Board');
     }
-
-    const updateChallengeHandler = () => {
-      deleteChallenge(route.params?.challengeId, user?.id as string);
-      navigation.navigate("ChallengeCreate" as never)
-    }
-
-    useEffect(() => {
-
-        if(route.params?.challengeId){
-          fetchData();
-        }
-
-      }, []);
-
+  
   return (
     <Container>
             <TopBox>
                 <Title>{route.params.title}</Title>
                 <WriterBox>
-                  <Text>{challengeUser.username}</Text>
+                  <Text>{route.params.user.username}</Text>
                 </WriterBox>
-                {user?.id !== null && user?.id == challengeUser.user_id &&
+                {user?.id !== null && user?.id == route.params.user_id &&
                 <ButtonBox>
-                  <UpdateButton onPress={updateChallengeHandler}>
+                  <UpdateButton onPress={updateHandler}>
                   <Text style={{color:'#FFFFFF'}}>수정</Text>
                   </UpdateButton>
-                  <DeleteButton onPress={deleteChallengeHandler}>
+                  <DeleteButton onPress={deleteHandler}>
                   <Text>삭제</Text>
                   </DeleteButton>
                 </ButtonBox>
@@ -106,29 +48,11 @@ export default function BoardCreateScreen() {
             </TopBox>
             <BoundaryLine/>
             <MiddleBox>
-                <TimeTableHeader>
-                    <Text>시간</Text>
-                    <Text>챌린지</Text>
-                </TimeTableHeader>
-                <ScrollView>
-                {challengeTask.map((item : Tables<'challenge_task'>, index : number) => (
-                    <TimeTableBody key={index}>
-                        <TimeText>{item.time}</TimeText>
-                        <ChallengeText>{item.taskname}</ChallengeText>
-                    </TimeTableBody>
-                ))}
-                </ScrollView>
+                <Text>{route.params.content}</Text>
             </MiddleBox>
+            <BoundaryLine/>
             <BottomBox>
-                {participationData?.participation_id == null ?
-                <SubmitButton onPress={submit}>
-                    <Text style={{color:'#FFFFFF'}}>도전</Text>
-                </SubmitButton>
-                : 
-                <SubmitButton onPress={submit}>
-                    <Text style={{color:'#FFFFFF'}}>오늘 하루 성공으로 기록하기</Text>
-                </SubmitButton>
-                }
+                
             </BottomBox>
         </Container>
   )
@@ -150,13 +74,13 @@ const TopBox = styled.View`
 
 const MiddleBox = styled.View`
     padding: 30px;
-    height: 65%;
+    height: 60%;
     gap: 10px;
 `;
 
 const BottomBox = styled.View`
     padding: 30px;
-    height: 10%;
+    height: 15%;
     justify-content: center;
     display: flex;
     flex-direction: row;

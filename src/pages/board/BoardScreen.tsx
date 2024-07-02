@@ -8,122 +8,34 @@ import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/n
 import moment from 'moment';
 import 'moment/locale/ko';
 import OctiIcon from 'react-native-vector-icons/Octicons';
-import { useDispatch, useSelector } from 'react-redux';
-import { ChallengeWithUser, fetchChallenge } from '../../redux/actions/challengeActions';
-import { RootState, AppDispatch } from '../../redux/store';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
+import { fetchBoard } from '../../db/api/board';
+import BoardList from '../../components/boardList';
 
 export default function BoardScreen() {
-  const [challenge, setChallenge] = useState<ChallengeWithUser[]>([]);
-  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
-  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({});
   const isFocused = useIsFocused();
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const dispatch: AppDispatch = useDispatch();
-  const { data, error } = useSelector((state: RootState) => state.challengeReducer);
-  const { user } = useSelector((state: RootState) => state.userReducer);
+  //const { user } = useSelector((state: RootState) => state.userReducer);
 
   const addButtonHandler = () => {
     navigation.navigate("BoardCreate" as never)
   }
 
-  const getChallenges = async (orderBy: string, ascending: boolean) => {
-    const challengeData = data;
-
-    const newIsLiked: { [key: number]: boolean } = {};
-    const newLikeCount: { [key: number]: number } = {};
-    challengeData.forEach((challenge: ChallengeWithUser) => {
-
-      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === user?.id);
-      newLikeCount[challenge.challenge_id] = challenge.challenge_like.length;
-  });
-    setIsLiked(newIsLiked);
-    setLikeCount(newLikeCount);
-
-    setChallenge(challengeData);
-  }
-
-const likeButtonHandler = async (challenge: any) => {
-  const challengeId = challenge.challenge_id as number;
-  if (isLiked[challengeId]) {
-    await deleteChallengeLike(user?.id as string, challengeId);
-    setIsLiked((prevState) => ({
-      ...prevState,
-      [challengeId]: false,
-    }));
-    setLikeCount((prevState) => ({
-      ...prevState,
-      [challengeId]: prevState[challengeId] - 1,
-    }));
-  } else {
-    await createChallengeLike(user?.id as string, challengeId);
-    setIsLiked((prevState) => ({
-      ...prevState,
-      [challengeId]: true,
-    }));
-    setLikeCount((prevState) => ({
-      ...prevState,
-      [challengeId]: prevState[challengeId] + 1,
-    }));
-  }
-};
-
-const handlePress = (item: any) => {
-  navigation.navigate('ChallengeDetail',{challengeId: item.challenge_id as number, title: item.title as string});
-};
-
-  useEffect(() => {
-    if (isFocused && user) {
-    dispatch(fetchChallenge('created_at', true)).then(() => getChallenges('created_at', false));
-    
-    }
-  }, [isFocused, user]);
-
   return (
     <Container>
       <SortBox>
-      <TouchableOpacity onPress={() => dispatch(fetchChallenge('created_at', false))}>
+      <TouchableOpacity>
         <Text>최신순</Text>
       </TouchableOpacity>
       <Text>  |  </Text>
-      <TouchableOpacity onPress={() => dispatch(fetchChallenge('likes_count', false))}>
+      <TouchableOpacity>
         <Text>공감순</Text>
       </TouchableOpacity>
       </SortBox>
-      {challenge.length > 0 ? (
-      <ChallengeScrollView
-        data={data}
-        keyExtractor={(item : ChallengeWithUser) => item.challenge_id}
-        renderItem={({ item } : { item : ChallengeWithUser}) => (
-        <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item) }>
-          <CardBox>
-            <CardItem>
-              <CardTop>
-                <ProfileImage/>
-                <Text>{item.user?.username}</Text>
-              </CardTop>
-              <ChallengeTitle>{item.title}</ChallengeTitle>
-              <CardBottom>
-                <Text>작성일 : {moment(item.created_at).format('YYYY.MM.DD')}</Text>
-                <LikeBox>
-                <TouchableOpacity onPress={() => likeButtonHandler(item)}>
-                  <OctiIcon name={
-                        isLiked[item.challenge_id as number]
-                          ? 'heart-fill'
-                          : 'heart'
-                      } size={16} />
-                </TouchableOpacity>
-                  <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
-                </LikeBox>
-              </CardBottom>
-            </CardItem>
-          </CardBox>
-        </TouchableOpacity>
-        )}/>
-        ) : (
-          <Text>데이터가 없습니다.</Text>
-        )}
+      <BoardList/>
       <CreateButton onPress={addButtonHandler}>
         <OctiIcon name='plus' size={32}/>
       </CreateButton>

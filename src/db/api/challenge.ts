@@ -66,7 +66,6 @@ export const fetchChallengeById = async (userId : string) => {
       }
   
       const challengeWithUser: ChallengeWithUser = data;
-      console.log(data);
       return challengeWithUser;
     } catch (error) {
       console.log('Catch Error :', error);
@@ -135,7 +134,6 @@ export const fetchChallengeById = async (userId : string) => {
         console.log('Error :', error);
         return [];
       }
-      console.log(data);
         return data;
 
     } catch (error) {
