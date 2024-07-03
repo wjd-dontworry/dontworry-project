@@ -127,7 +127,7 @@ export default function ProfileScreen() {
         {/* {user?.user_metadata.profile_image ? <UserProfile name="user-circle" /> : <UserProfile name="user-circle" />} */}
         <UserInfoBox>
           <Text>
-            <UserNameLabel>{user.user_metadata.username || "홍길동"}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel>
+            <UserNameLabel>{user?.email || "홍길동"}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel>
             {/* <UserNameLabel>{user?.user_metadata.username || ""}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel> */}
           </Text>
           <ButtonBox>
