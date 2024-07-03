@@ -11,6 +11,7 @@ import OctiIcon from "react-native-vector-icons/Octicons"
 import { useDispatch, useSelector } from "react-redux"
 import { ChallengeWithUser, fetchChallenge } from "../../redux/actions/challengeActions"
 import { RootState, AppDispatch } from "../../redux/store"
+import { ShadowedView } from "react-native-fast-shadow"
 
 export default function ChallengeScreen() {
   const [challenge, setChallenge] = useState<ChallengeWithUser[]>([])
@@ -102,36 +103,39 @@ export default function ChallengeScreen() {
           keyExtractor={(item: ChallengeWithUser) => item.challenge_id}
           renderItem={({ item }: { item: ChallengeWithUser }) => (
             <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item)}>
-              <CardBox>
-                <CardItem>
-                  <CardTop>
-                    <ProfileImage />
-                    <Text>{item.user?.username}</Text>
-                  </CardTop>
-                  <ChallengeTitle>{item.title}</ChallengeTitle>
-                  <CardBottom>
-                    <Text>작성일 : {moment(item.created_at).format("YYYY.MM.DD")}</Text>
-                    <LikeBox>
-                      <TouchableOpacity onPress={() => likeButtonHandler(item)}>
-                        <OctiIcon name={isLiked[item.challenge_id as number] ? "heart-fill" : "heart"} size={16} />
-                      </TouchableOpacity>
-                      <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
-                    </LikeBox>
-                  </CardBottom>
-                </CardItem>
-              </CardBox>
+              <ShadowBox>
+                <CardBox>
+                  <CardItem>
+                    <CardTop>
+                      <ProfileImage />
+                      <Text>{item.user?.username}</Text>
+                    </CardTop>
+                    <ChallengeTitle>{item.title}</ChallengeTitle>
+                    <CardBottom>
+                      <Text>작성일 : {moment(item.created_at).format("YYYY.MM.DD")}</Text>
+                      <LikeBox>
+                        <TouchableOpacity onPress={() => likeButtonHandler(item)}>
+                          <OctiIcon name={isLiked[item.challenge_id as number] ? "heart-fill" : "heart"} size={16} />
+                        </TouchableOpacity>
+                        <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
+                      </LikeBox>
+                    </CardBottom>
+                  </CardItem>
+                </CardBox>
+              </ShadowBox>
             </TouchableOpacity>
           )}
         />
       ) : (
         <View>
           <Text>데이터가 없습니다.</Text>
-          <Button title="aa" onPress={aa}></Button>
         </View>
       )}
-      <CreateButton onPress={addButtonHandler}>
-        <OctiIcon name="plus" size={32} />
-      </CreateButton>
+      <ShadowBox>
+        <CreateButton onPress={addButtonHandler}>
+          <OctiIcon name="plus" size={32} />
+        </CreateButton>
+      </ShadowBox>
     </Container>
   )
 }
@@ -149,11 +153,19 @@ const ChallengeScrollView = styled.FlatList`
   min-height: 100%;
 `
 
+const ShadowBox = styled(ShadowedView).attrs({
+  shadowOpacity: 0.4,
+  shadowRadius: 1,
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+})``
+
 const CardBox = styled.View`
   background-color: #ffffff;
   border-radius: 20px;
   margin-top: 10px;
-  elevation: 1;
   overflow: hidden;
 `
 
@@ -187,13 +199,12 @@ const LikeCount = styled.Text``
 
 const CreateButton = styled.TouchableOpacity`
   position: absolute;
-  right: 30px;
-  bottom: 50px;
+  right: 10px;
+  bottom: 80px;
   width: 60px;
   height: 60px;
   background-color: #ffbe98;
   border-radius: 30px;
   justify-content: center;
   align-items: center;
-  elevation: 3;
 `
