@@ -383,7 +383,7 @@ const ProgressBarData = styled(Progress.Bar)`
 const NextChallengeBox = styled(View)`
   width: 100%;
   border: 2px solid #ffebe0;
-  border-radius: 20%;
+  border-radius: 20px;
   margin-top: 8px;
   margin-bottom: 8px;
 `
