@@ -2,7 +2,7 @@ import React from "react"
 import styled from "styled-components/native"
 import { Text, View, ViewStyle } from "react-native"
 import moment from "moment"
-import OctiIcon from 'react-native-vector-icons/Octicons';
+import OctiIcon from "react-native-vector-icons/Octicons"
 
 interface IPage {
   item: any
@@ -58,10 +58,13 @@ export default function Page({ item, style }: IPage) {
         <PageTitle>{item.title}</PageTitle>
         <PageContent>
           <Text>{`작성자 ${item.user.username}`}</Text>
-          <LikeBox><OctiIcon name={'heart-fill'} size={16} /><Text> {item.challenge_like.length}</Text></LikeBox>
+          <LikeBox>
+            <OctiIcon name={"heart-fill"} size={16} />
+            <Text> {item.challenge_like.length}</Text>
+          </LikeBox>
         </PageContent>
         <PageContent>
-          <Text>{`작성일 ${moment(item.created_at).format('YYYY.MM.DD')}`}</Text>
+          <Text>{`작성일 ${moment(item.created_at).format("YYYY.MM.DD")}`}</Text>
           <Text>{`조회수 0`}</Text>
         </PageContent>
       </CardBox>
