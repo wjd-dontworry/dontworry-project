@@ -1,9 +1,9 @@
 import styled from "styled-components/native"
 import { useEffect, useState } from "react"
 import { useNavigation, NavigationProp } from "@react-navigation/native"
+import { fetchParticipationIdByUserId } from "../../db/api/challenge"
 import { supabase } from "../../db/supabase"
 import { View, Text, TouchableOpacity, ScrollView } from "react-native"
-
 import { AppDispatch, RootState } from "../../redux/store"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -12,6 +12,7 @@ import Icon from "react-native-vector-icons/FontAwesome"
 import DownIcon from "react-native-vector-icons/AntDesign"
 import OctiIcon from "react-native-vector-icons/Octicons"
 import * as Progress from "react-native-progress"
+import { ChallengeWithUser } from "../../redux/actions/challengeActions"
 
 type RootStackParamList = {
   Home: undefined
@@ -22,32 +23,18 @@ type RootStackParamList = {
 export default function ProfileScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>()
   const { user } = useSelector((state: RootState) => state.userReducer)
+  const { data, error } = useSelector((state: RootState) => state.challengeReducer)
   const [isGoalOpen, setIsGoalOpen] = useState(false)
   const [isLikeOpen, setIsLikeOpen] = useState(false)
-  const [likeCount, setLikeCount] = useState<number>(0)
+  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({})
+  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({})
+  const [challenge, setChallenge] = useState<ChallengeWithUser[]>([])
+  const [mychallenge, setMyChallenge] = useState<any>([])
 
   const dispatch: AppDispatch = useDispatch()
 
   // test유저가 올린 전체 글에 대한 전체 공감수 쿼리 수정 필요
   // 현재 email 불러오는데 auth에서 현재 불러오는데 userName, profile_image redux에서 불러올 수 있도록
-  useEffect(() => {
-    const fetchLikeCount = async () => {
-      try {
-        if (user) {
-          const { data, error } = await supabase.from("challenge").select("like_count", { count: "exact" }).eq("user_id", user.id)
-          if (error) {
-            console.error("Error fetching like count:", error.message)
-            return
-          }
-          setLikeCount(data?.length ? data.length : 0)
-        }
-      } catch (error) {
-        console.error("Error fetching like count:", error)
-      }
-    }
-
-    fetchLikeCount()
-  }, [user])
 
   const MemberOut = async () => {
     try {
@@ -102,15 +89,44 @@ export default function ProfileScreen() {
     checkSession()
   }, [navigation])
 
+  const getMyLikeChallenges = async (orderBy: string, ascending: boolean) => {
+    const challengeData = data
+    console.log(challengeData)
+
+    const newIsLiked: { [key: number]: boolean } = {}
+    const newLikeCount: { [key: number]: number } = {}
+
+    challengeData.forEach((challenge: ChallengeWithUser) => {
+      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === user?.id)
+      newLikeCount[challenge.challenge_id] = challenge.challenge_like.length
+    })
+    setIsLiked(newIsLiked)
+    setLikeCount(newLikeCount)
+
+    setChallenge(challengeData)
+  }
+
+  const getMyChallenges = async (uuid: string | null) => {
+    if (uuid) {
+      const challengeData = await fetchParticipationIdByUserId(uuid)
+      setMyChallenge(challengeData)
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      getMyLikeChallenges("created_at", true)
+      getMyChallenges(user.id)
+    }
+  }, [user])
+
   return (
     <ProfileTopBox>
       <ProfileBox>
-        {/* {user?.user_metadata.profile_image ? <UserProfile name="user-circle" /> : <UserProfile name="user-circle" />} */}
-        <UserProfile name="user-circle" />
+        {user?.user_metadata.profile_image ? <UserProfile name="user-circle" /> : <UserProfile name="user-circle" />}
         <UserInfoBox>
           <Text>
-            <UserNameLabel>{user?.email || "홍길동"}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel>
-            {/* <UserNameLabel>{user?.user_metadata.username || ""}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel> */}
+            <UserNameLabel>{user?.user_metadata.username || ""}</UserNameLabel> <UserHelloLabel>님 {"\n"}안녕하세요</UserHelloLabel>
           </Text>
           <ButtonBox>
             <Button onPress={() => navigation.navigate("UserUpdate")}>
@@ -134,78 +150,37 @@ export default function ProfileScreen() {
             {isGoalOpen && (
               <ShowSlideBox>
                 <ChallengeGoalOuterListBox>
-                  <ChallengeGoalInnerListBox>
-                    <ChallengeTextBox>
-                      <ChallengeText>자바 공부하기</ChallengeText>
-                    </ChallengeTextBox>
-                    <ProgressBarBox>
-                      <DataBox>
-                        <GoalText>주간 달성률</GoalText>
-                        <PercentText>50%</PercentText>
-                        <ProgressBarData progress={0.5} color="#FFBE98" />
-                      </DataBox>
-                      <DataBox>
-                        <GoalText>월간 달성률</GoalText>
-                        <PercentText>30%</PercentText>
-                        <ProgressBarData progress={0.3} color="#FFBE98" />
-                      </DataBox>
-                    </ProgressBarBox>
-                  </ChallengeGoalInnerListBox>
-                  <NextChallengeBox />
-                  <ChallengeGoalInnerListBox>
-                    <ChallengeTextBox>
-                      <ChallengeText>자바 공부하기</ChallengeText>
-                    </ChallengeTextBox>
-                    <ProgressBarBox>
-                      <DataBox>
-                        <GoalText>주간 달성률</GoalText>
-                        <PercentText>50%</PercentText>
-                        <ProgressBarData progress={0.5} color="#FFBE98" />
-                      </DataBox>
-                      <DataBox>
-                        <GoalText>월간 달성률</GoalText>
-                        <PercentText>30%</PercentText>
-                        <ProgressBarData progress={0.3} color="#FFBE98" />
-                      </DataBox>
-                    </ProgressBarBox>
-                  </ChallengeGoalInnerListBox>
-                  <NextChallengeBox />
-                  <ChallengeGoalInnerListBox>
-                    <ChallengeTextBox>
-                      <ChallengeText>자바 공부하기</ChallengeText>
-                    </ChallengeTextBox>
-                    <ProgressBarBox>
-                      <DataBox>
-                        <GoalText>주간 달성률</GoalText>
-                        <PercentText>50%</PercentText>
-                        <ProgressBarData progress={0.5} color="#FFBE98" />
-                      </DataBox>
-                      <DataBox>
-                        <GoalText>월간 달성률</GoalText>
-                        <PercentText>30%</PercentText>
-                        <ProgressBarData progress={0.3} color="#FFBE98" />
-                      </DataBox>
-                    </ProgressBarBox>
-                  </ChallengeGoalInnerListBox>
-                  <NextChallengeBox />
-                  <ChallengeGoalInnerListBox>
-                    <ChallengeTextBox>
-                      <ChallengeText>자바 공부하기</ChallengeText>
-                    </ChallengeTextBox>
-                    <ProgressBarBox>
-                      <DataBox>
-                        <GoalText>주간 달성률</GoalText>
-                        <PercentText>50%</PercentText>
-                        <ProgressBarData progress={0.5} color="#FFBE98" />
-                      </DataBox>
-                      <DataBox>
-                        <GoalText>월간 달성률</GoalText>
-                        <PercentText>30%</PercentText>
-                        <ProgressBarData progress={0.3} color="#FFBE98" />
-                      </DataBox>
-                    </ProgressBarBox>
-                  </ChallengeGoalInnerListBox>
-                  <NextChallengeBox />
+                  {mychallenge.length > 0 ? (
+                    mychallenge.map((item: any, index: number) => (
+                      <View key={item.challenge.challenge_id}>
+                        <ChallengeGoalInnerListBox>
+                          <ChallengeTextBox>
+                            <ChallengeText>{item.challenge.title}</ChallengeText>
+                          </ChallengeTextBox>
+                          <ProgressBarBox>
+                            <DataBox>
+                              <GoalText>주간 달성률</GoalText>
+                              <PercentText>50%</PercentText>
+                              <ProgressBarData progress={0.5} color="#FFBE98" />
+                            </DataBox>
+                            <DataBox>
+                              <GoalText>월간 달성률</GoalText>
+                              <PercentText>30%</PercentText>
+                              <ProgressBarData progress={0.3} color="#FFBE98" />
+                            </DataBox>
+                          </ProgressBarBox>
+                        </ChallengeGoalInnerListBox>
+                        <NextChallengeBox />
+                      </View>
+                    ))
+                  ) : (
+                    <>
+                      <EmptyDataBox>
+                        <EmptyText>아직 도전 중인 챌린지가 없습니다.</EmptyText>
+                        <EmptyText>도전해보세요!</EmptyText>
+                      </EmptyDataBox>
+                    </>
+                  )}
                 </ChallengeGoalOuterListBox>
               </ShowSlideBox>
             )}
@@ -214,72 +189,35 @@ export default function ProfileScreen() {
         <SliderAreaBox>
           <DropBox>
             <SlideBox>
-              <GoalPercentText>내가 받은 공감 게시글</GoalPercentText>
-              <DownIcon name="caretdown" size={15} onPress={() => toggleLikeBox()} style={{ justifyContent: "center" }} />
+              <GoalPercentText>내가 받은 공감 챌린지</GoalPercentText>
+              <DownIcon name="caretdown" size={12} onPress={() => toggleLikeBox()} />
             </SlideBox>
             {isLikeOpen && (
               <ShowSlideBox>
                 <MyBoardOuterListBox>
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
-                  <MyBoardInnerListBox>
-                    <MyBoardTextBox>
-                      <BoardText>자바 공부하기</BoardText>
-                    </MyBoardTextBox>
-                    <MyBoardLikeBox>
-                      <OctiIcon name="heart-fill" size={15} />
-                      <LikedChallengesList>{likeCount}</LikedChallengesList>
-                    </MyBoardLikeBox>
-                  </MyBoardInnerListBox>
-                  <NextChallengeBox />
+                  {data.length > 0 ? (
+                    data.map((item: any, index: number) => (
+                      <View key={index}>
+                        <MyBoardInnerListBox>
+                          <ListDataBox>
+                            <BoardText>{item.title}</BoardText>
+                          </ListDataBox>
+                          <LikeDataBox>
+                            <OctiIcon name="heart-fill" size={12} />
+                            <LikedChallengesList>{likeCount[item.challenge_id as number]}</LikedChallengesList>
+                          </LikeDataBox>
+                        </MyBoardInnerListBox>
+                        <NextChallengeBox />
+                      </View>
+                    ))
+                  ) : (
+                    <>
+                      <EmptyDataBox>
+                        <EmptyText>아직 공감을 받은 게시글 없습니다.</EmptyText>
+                        <EmptyText>도전해보세요!</EmptyText>
+                      </EmptyDataBox>
+                    </>
+                  )}
                 </MyBoardOuterListBox>
               </ShowSlideBox>
             )}
@@ -380,20 +318,20 @@ const GoalPercentText = styled(Text)`
 
 const ShowSlideBox = styled(View)`
   width: 90%;
-  height: 90%;
+  height: 80%;
   margin: 0px auto;
   background-color: #fff;
-  justify-content: center;
   border-radius: 20px;
 `
 
 const ChallengeGoalOuterListBox = styled(ScrollView)`
-  margin: 10px auto;
   width: 90%;
+  margin: 20px auto;
 `
 
 const ChallengeGoalInnerListBox = styled(View)`
   flex-direction: row;
+  width: 100%;
   gap: 5px;
 `
 
@@ -449,19 +387,19 @@ const NextChallengeBox = styled(View)`
 `
 
 const MyBoardOuterListBox = styled(ScrollView)`
-  margin: 10px auto;
   width: 90%;
+  margin: 20px auto;
 `
 
 const MyBoardInnerListBox = styled(View)`
   flex-direction: row;
+  width: 100%;
   gap: 5px;
 `
 
-const MyBoardTextBox = styled(View)`
-  width: 25%;
+const ListDataBox = styled(View)`
+  width: 80%;
   justify-content: center;
-  align-items: center;
 `
 
 const BoardText = styled(Text)`
@@ -470,16 +408,29 @@ const BoardText = styled(Text)`
   font-family: "LINE Seed Sans KR";
 `
 
-const MyBoardLikeBox = styled(View)`
+const LikeDataBox = styled(View)`
+  align-items: center;
+  justify-content: center;
+  width: 10%;
   flex-direction: row;
   gap: 5px;
-  justify-content: center;
-  align-items: center;
 `
 
 const LikedChallengesList = styled(Text)`
   font-size: 12px;
   font-weight: 600;
+  font-family: "LINE Seed Sans KR";
+`
+
+const EmptyDataBox = styled(View)`
+  justify-content: center;
+  align-items: center;
+  margin: 0px auto;
+`
+
+const EmptyText = styled(Text)`
+  font-size: 15px;
+  font-weight: 700;
   font-family: "LINE Seed Sans KR";
 `
 
