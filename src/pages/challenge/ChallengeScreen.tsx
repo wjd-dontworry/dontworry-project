@@ -1,140 +1,136 @@
-import { Text, TouchableOpacity, ScrollView, Button, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import styled from "styled-components/native";
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { createChallengeLike, deleteChallengeLike } from '../../db/api/challenge';
-import {RootStackParamList} from '../../types/navigation';
-import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
-import moment from 'moment';
-import 'moment/locale/ko';
-import OctiIcon from 'react-native-vector-icons/Octicons';
-import { useDispatch, useSelector } from 'react-redux';
-import { ChallengeWithUser, fetchChallenge } from '../../redux/actions/challengeActions';
-import { RootState, AppDispatch } from '../../redux/store';
+import { Text, TouchableOpacity, ScrollView, Button, View } from "react-native"
+import React, { useEffect, useState } from "react"
+import styled from "styled-components/native"
+import { useIsFocused, useNavigation } from "@react-navigation/native"
+import { createChallengeLike, deleteChallengeLike } from "../../db/api/challenge"
+import { RootStackParamList } from "../../types/navigation"
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types"
+import moment from "moment"
+import "moment/locale/ko"
+import OctiIcon from "react-native-vector-icons/Octicons"
+import { useDispatch, useSelector } from "react-redux"
+import { ChallengeWithUser, fetchChallenge } from "../../redux/actions/challengeActions"
+import { RootState, AppDispatch } from "../../redux/store"
 
 export default function ChallengeScreen() {
-  const [challenge, setChallenge] = useState<ChallengeWithUser[]>([]);
-  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
-  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({});
-  const isFocused = useIsFocused();
+  const [challenge, setChallenge] = useState<ChallengeWithUser[]>([])
+  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({})
+  const [likeCount, setLikeCount] = useState<{ [key: number]: number }>({})
+  const isFocused = useIsFocused()
 
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
-  const dispatch: AppDispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch()
   const { data, error } = useSelector((state: RootState) => {
-    return state.challengeReducer});
-  const { user } = useSelector((state: RootState) => state.userReducer);
+    return state.challengeReducer
+  })
+  const { user } = useSelector((state: RootState) => state.userReducer)
 
   const addButtonHandler = () => {
     navigation.navigate("ChallengeCreate" as never)
   }
 
   const getChallenges = async (orderBy: string, ascending: boolean) => {
-    const challengeData = data;
+    const challengeData = data
 
-    const newIsLiked: { [key: number]: boolean } = {};
-    const newLikeCount: { [key: number]: number } = {};
+    const newIsLiked: { [key: number]: boolean } = {}
+    const newLikeCount: { [key: number]: number } = {}
     challengeData.forEach((challenge: ChallengeWithUser) => {
+      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === user?.id)
+      newLikeCount[challenge.challenge_id] = challenge.challenge_like.length
+    })
+    setIsLiked(newIsLiked)
+    setLikeCount(newLikeCount)
 
-      newIsLiked[challenge.challenge_id] = challenge.challenge_like.some(like => like.user_id === user?.id);
-      newLikeCount[challenge.challenge_id] = challenge.challenge_like.length;
-  });
-    setIsLiked(newIsLiked);
-    setLikeCount(newLikeCount);
-
-    setChallenge(challengeData);
+    setChallenge(challengeData)
   }
 
-  function aa () {
-    console.log(data);
-    console.log(challenge.length);
+  function aa() {
+    console.log(data)
+    console.log(challenge.length)
   }
 
-const likeButtonHandler = async (challenge: any) => {
-  const challengeId = challenge.challenge_id as number;
-  if (isLiked[challengeId]) {
-    await deleteChallengeLike(user?.id as string, challengeId);
-    setIsLiked((prevState) => ({
-      ...prevState,
-      [challengeId]: false,
-    }));
-    setLikeCount((prevState) => ({
-      ...prevState,
-      [challengeId]: prevState[challengeId] - 1,
-    }));
-  } else {
-    await createChallengeLike(user?.id as string, challengeId);
-    setIsLiked((prevState) => ({
-      ...prevState,
-      [challengeId]: true,
-    }));
-    setLikeCount((prevState) => ({
-      ...prevState,
-      [challengeId]: prevState[challengeId] + 1,
-    }));
+  const likeButtonHandler = async (challenge: any) => {
+    const challengeId = challenge.challenge_id as number
+    if (isLiked[challengeId]) {
+      await deleteChallengeLike(user?.id as string, challengeId)
+      setIsLiked(prevState => ({
+        ...prevState,
+        [challengeId]: false,
+      }))
+      setLikeCount(prevState => ({
+        ...prevState,
+        [challengeId]: prevState[challengeId] - 1,
+      }))
+    } else {
+      await createChallengeLike(user?.id as string, challengeId)
+      setIsLiked(prevState => ({
+        ...prevState,
+        [challengeId]: true,
+      }))
+      setLikeCount(prevState => ({
+        ...prevState,
+        [challengeId]: prevState[challengeId] + 1,
+      }))
+    }
   }
-};
 
-const handlePress = (item: any) => {
-  navigation.navigate('ChallengeDetail',{challengeId: item.challenge_id as number, title: item.title as string});
-};
+  const handlePress = (item: any) => {
+    navigation.navigate("ChallengeDetail", { challengeId: item.challenge_id as number, title: item.title as string })
+  }
 
   useEffect(() => {
     if (isFocused && user) {
-    dispatch(fetchChallenge('created_at', true)).then(() => getChallenges('created_at', false));
-    
+      dispatch(fetchChallenge("created_at", true)).then(() => getChallenges("created_at", false))
     }
-  }, [isFocused, user]);
+  }, [isFocused, user])
 
   return (
     <Container>
       <SortBox>
-      <TouchableOpacity onPress={() => dispatch(fetchChallenge('created_at', false))}>
-        <Text>최신순</Text>
-      </TouchableOpacity>
-      <Text>  |  </Text>
-      <TouchableOpacity onPress={() => dispatch(fetchChallenge('likes_count', false))}>
-        <Text>공감순</Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => dispatch(fetchChallenge("created_at", false))}>
+          <Text>최신순</Text>
+        </TouchableOpacity>
+        <Text> | </Text>
+        <TouchableOpacity onPress={() => dispatch(fetchChallenge("likes_count", false))}>
+          <Text>공감순</Text>
+        </TouchableOpacity>
       </SortBox>
       {data.length > 0 ? (
-      <ChallengeScrollView
-        data={data}
-        keyExtractor={(item : ChallengeWithUser) => item.challenge_id}
-        renderItem={({ item } : { item : ChallengeWithUser}) => (
-        <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item) }>
-          <CardBox>
-            <CardItem>
-              <CardTop>
-                <ProfileImage/>
-                <Text>{item.user?.username}</Text>
-              </CardTop>
-              <ChallengeTitle>{item.title}</ChallengeTitle>
-              <CardBottom>
-                <Text>작성일 : {moment(item.created_at).format('YYYY.MM.DD')}</Text>
-                <LikeBox>
-                <TouchableOpacity onPress={() => likeButtonHandler(item)}>
-                  <OctiIcon name={
-                        isLiked[item.challenge_id as number]
-                          ? 'heart-fill'
-                          : 'heart'
-                      } size={16} />
-                </TouchableOpacity>
-                  <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
-                </LikeBox>
-              </CardBottom>
-            </CardItem>
-          </CardBox>
-        </TouchableOpacity>
-        )}/>
-        ) : (
-          <View>
+        <ChallengeScrollView
+          data={data}
+          keyExtractor={(item: ChallengeWithUser) => item.challenge_id}
+          renderItem={({ item }: { item: ChallengeWithUser }) => (
+            <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item)}>
+              <CardBox>
+                <CardItem>
+                  <CardTop>
+                    <ProfileImage />
+                    <Text>{item.user?.username}</Text>
+                  </CardTop>
+                  <ChallengeTitle>{item.title}</ChallengeTitle>
+                  <CardBottom>
+                    <Text>작성일 : {moment(item.created_at).format("YYYY.MM.DD")}</Text>
+                    <LikeBox>
+                      <TouchableOpacity onPress={() => likeButtonHandler(item)}>
+                        <OctiIcon name={isLiked[item.challenge_id as number] ? "heart-fill" : "heart"} size={16} />
+                      </TouchableOpacity>
+                      <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
+                    </LikeBox>
+                  </CardBottom>
+                </CardItem>
+              </CardBox>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <View>
           <Text>데이터가 없습니다.</Text>
-          <Button title='aa' onPress={aa}></Button>
-          </View>
-        )}
+          <Button title="aa" onPress={aa}></Button>
+        </View>
+      )}
       <CreateButton onPress={addButtonHandler}>
-        <OctiIcon name='plus' size={32}/>
+        <OctiIcon name="plus" size={32} />
       </CreateButton>
     </Container>
   )
@@ -187,9 +183,7 @@ const LikeBox = styled.View`
   flex-direction: row;
 `
 
-const LikeCount = styled.Text`
-  
-`
+const LikeCount = styled.Text``
 
 const CreateButton = styled.TouchableOpacity`
   position: absolute;

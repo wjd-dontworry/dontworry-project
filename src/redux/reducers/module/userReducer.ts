@@ -1,24 +1,24 @@
-import { User, UserActions } from '../../actions/userActions';
+import { User, UserActions } from "../../actions/userActions"
 
-const initialState: { user: User | 'guest' | null } = {
+const initialState: { user: User | "guest" | null } = {
   user: null,
-};
+}
 
-const userReducer = (state = initialState, action: UserActions): { user: User | 'guest' | null } => {
+const userReducer = (state = initialState, action: UserActions): { user: User | "guest" | null } => {
   switch (action.type) {
-    case 'SET_USER':
+    case "SET_USER":
       return {
         ...state,
         user: action.payload,
-      };
-    case 'SET_GUEST':
+      }
+    case "SET_GUEST":
       return {
         ...state,
-        user: 'guest',
-      };
+        user: "guest",
+      }
     default:
-      return state;
+      return state
   }
-};
+}
 
-export default userReducer;
+export default userReducer

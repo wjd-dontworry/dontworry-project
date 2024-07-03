@@ -20,6 +20,7 @@ import { useDispatch } from "react-redux"
 import { useEffect } from "react"
 import { AppDispatch } from "./redux/store"
 import { fetchUser } from "./redux/actions/userActions"
+import { Text } from "react-native"
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -50,19 +51,36 @@ function TabNavigator() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => <AntDesignIcon name="home" style={{ color: focused ? "#ffbe98" : "#404040" }} size={30} />,
-          title: "홈",
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                fontSize: 12,
+                color: focused ? "#ffbe98" : "#404040",
+              }}>
+              홈
+            </Text>
+          ),
           headerTitle: "돈워리",
           headerTitleStyle: {
             fontWeight: "bold",
           },
         }}
       />
+
       <Tab.Screen
         name="Challenge"
         component={ChallengeScreen}
         options={{
           tabBarIcon: ({ focused }) => <OctIcon name="checklist" style={{ color: focused ? "#ffbe98" : "#404040" }} size={30} />,
-          title: "챌린지",
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                fontSize: 12,
+                color: focused ? "#ffbe98" : "#404040",
+              }}>
+              챌린지
+            </Text>
+          ),
           headerTitle: "챌린지 살펴보기",
           headerTitleStyle: {
             fontWeight: "bold",
@@ -74,7 +92,15 @@ function TabNavigator() {
         component={BoardScreen}
         options={{
           tabBarIcon: ({ focused }) => <MaterialCommunityIcon name="forum-outline" style={{ color: focused ? "#ffbe98" : "#404040" }} size={30} />,
-          title: "게시판",
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                fontSize: 12,
+                color: focused ? "#ffbe98" : "#404040",
+              }}>
+              게시판
+            </Text>
+          ),
           headerTitle: "게시판 살펴보기",
           headerTitleStyle: {
             fontWeight: "bold",
@@ -86,7 +112,15 @@ function TabNavigator() {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => <AntDesignIcon name="profile" style={{ color: focused ? "#ffbe98" : "#404040" }} size={30} />,
-          title: "마이페이지",
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                fontSize: 12,
+                color: focused ? "#ffbe98" : "#404040",
+              }}>
+              마이페이지
+            </Text>
+          ),
           headerTitle: "마이페이지",
           headerTitleStyle: {
             fontWeight: "bold",
