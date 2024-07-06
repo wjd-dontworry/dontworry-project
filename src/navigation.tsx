@@ -20,7 +20,7 @@ import { useDispatch } from "react-redux"
 import { useEffect } from "react"
 import { AppDispatch } from "./redux/store"
 import { fetchUser } from "./redux/actions/userActions"
-import { Text } from "react-native"
+import { Text, TouchableOpacity } from "react-native"
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -133,7 +133,6 @@ function TabNavigator() {
 
 export default function Navigation() {
   const dispatch: AppDispatch = useDispatch()
-
   useEffect(() => {
     //유저 정보 주입
     dispatch(fetchUser())
@@ -141,15 +140,41 @@ export default function Navigation() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: true }}>
+      <Stack.Navigator initialRouteName="TabNavigator">
         <Stack.Screen name="TabNavigator" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="UserUpdate" component={UserUpdateScreen} options={{ headerShown: false }} />
         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCreate" component={ChallengeCreateScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} options={{ headerShown: true, title: "챌린지 상세보기", headerTitleAlign: "center" }} />
+        <Stack.Screen
+          name="ChallengeDetail"
+          component={ChallengeDetailScreen}
+          options={({ navigation }) => ({
+            headerShown: true,
+            title: "챌린지 상세보기",
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.navigate("Challenge" as never)}>
+                <AntDesignIcon name="arrowleft" size={30} color="#000" />
+              </TouchableOpacity>
+            ),
+          })}
+        />
         <Stack.Screen name="BoardCreate" component={BoardCreateScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="BoardDetail" component={BoardDetailScreen} options={{ headerShown: true, title: "게시판 상세보기", headerTitleAlign: "center" }} />
+        <Stack.Screen
+          name="BoardDetail"
+          component={BoardDetailScreen}
+          options={({ navigation }) => ({
+            headerShown: true,
+            title: "게시판 상세보기",
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.navigate("Board" as never)}>
+                <AntDesignIcon name="arrowleft" size={30} color="#000" />
+              </TouchableOpacity>
+            ),
+          })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )
