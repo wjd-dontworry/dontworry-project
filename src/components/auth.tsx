@@ -181,7 +181,7 @@ const InputLabel = styled(Text)`
 const InputTextContainer = styled(View)`
   width: 90%;
   border-color: #ccc;
-  border-bottom-width: 1;
+  border-bottom-width: 1px;
   margin-bottom: 15px;
 `
 

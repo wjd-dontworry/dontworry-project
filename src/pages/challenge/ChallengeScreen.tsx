@@ -2,7 +2,6 @@ import { Text, TouchableOpacity, ScrollView, Button, View } from "react-native"
 import React, { useEffect, useState } from "react"
 import styled from "styled-components/native"
 import { useIsFocused, useNavigation } from "@react-navigation/native"
-import { createChallengeLike, deleteChallengeLike } from "../../db/api/challenge"
 import { RootStackParamList } from "../../types/navigation"
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types"
 import moment from "moment"
@@ -11,7 +10,6 @@ import OctiIcon from "react-native-vector-icons/Octicons"
 import { useDispatch, useSelector } from "react-redux"
 import { ChallengeWithUser, fetchChallenge } from "../../redux/actions/challengeActions"
 import { RootState, AppDispatch } from "../../redux/store"
-import { ShadowedView } from "react-native-fast-shadow"
 
 export default function ChallengeScreen() {
   const [challenge, setChallenge] = useState<ChallengeWithUser[]>([])
@@ -51,31 +49,6 @@ export default function ChallengeScreen() {
     console.log(challenge.length)
   }
 
-  const likeButtonHandler = async (challenge: any) => {
-    const challengeId = challenge.challenge_id as number
-    if (isLiked[challengeId]) {
-      await deleteChallengeLike(user?.id as string, challengeId)
-      setIsLiked(prevState => ({
-        ...prevState,
-        [challengeId]: false,
-      }))
-      setLikeCount(prevState => ({
-        ...prevState,
-        [challengeId]: prevState[challengeId] - 1,
-      }))
-    } else {
-      await createChallengeLike(user?.id as string, challengeId)
-      setIsLiked(prevState => ({
-        ...prevState,
-        [challengeId]: true,
-      }))
-      setLikeCount(prevState => ({
-        ...prevState,
-        [challengeId]: prevState[challengeId] + 1,
-      }))
-    }
-  }
-
   const handlePress = (item: any) => {
     navigation.navigate("ChallengeDetail", { challengeId: item.challenge_id as number, title: item.title as string })
   }
@@ -103,26 +76,24 @@ export default function ChallengeScreen() {
           keyExtractor={(item: ChallengeWithUser) => item.challenge_id}
           renderItem={({ item }: { item: ChallengeWithUser }) => (
             <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item)}>
-              <ShadowBox>
-                <CardBox>
-                  <CardItem>
-                    <CardTop>
-                      <ProfileImage />
-                      <Text>{item.user?.username}</Text>
-                    </CardTop>
-                    <ChallengeTitle>{item.title}</ChallengeTitle>
-                    <CardBottom>
-                      <Text>작성일 : {moment(item.created_at).format("YYYY.MM.DD")}</Text>
-                      <LikeBox>
-                        <TouchableOpacity onPress={() => likeButtonHandler(item)}>
-                          <OctiIcon name={isLiked[item.challenge_id as number] ? "heart-fill" : "heart"} size={16} />
-                        </TouchableOpacity>
-                        <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
-                      </LikeBox>
-                    </CardBottom>
-                  </CardItem>
-                </CardBox>
-              </ShadowBox>
+              <CardBox>
+                <CardItem>
+                  <CardTop>
+                    <ProfileImage />
+                    <Text>{item.user?.username}</Text>
+                  </CardTop>
+                  <ChallengeTitle>{item.title}</ChallengeTitle>
+                  <CardBottom>
+                    <Text>작성일 : {moment(item.created_at).format("YYYY.MM.DD")}</Text>
+                    <LikeBox>
+                      <TouchableOpacity>
+                        <OctiIcon name="heart-fill" size={16} />
+                      </TouchableOpacity>
+                      <LikeCount> {likeCount[item.challenge_id as number]} </LikeCount>
+                    </LikeBox>
+                  </CardBottom>
+                </CardItem>
+              </CardBox>
             </TouchableOpacity>
           )}
         />
@@ -131,11 +102,9 @@ export default function ChallengeScreen() {
           <Text>데이터가 없습니다.</Text>
         </View>
       )}
-      <ShadowBox>
-        <CreateButton onPress={addButtonHandler}>
-          <OctiIcon name="plus" size={32} />
-        </CreateButton>
-      </ShadowBox>
+      <CreateButton onPress={addButtonHandler}>
+        <OctiIcon name="plus" size={32} />
+      </CreateButton>
     </Container>
   )
 }
@@ -152,15 +121,6 @@ const SortBox = styled.View`
 const ChallengeScrollView = styled.FlatList`
   min-height: 100%;
 `
-
-const ShadowBox = styled(ShadowedView).attrs({
-  shadowOpacity: 0.4,
-  shadowRadius: 1,
-  shadowOffset: {
-    width: 0,
-    height: 3,
-  },
-})``
 
 const CardBox = styled.View`
   background-color: #ffffff;
@@ -199,8 +159,8 @@ const LikeCount = styled.Text``
 
 const CreateButton = styled.TouchableOpacity`
   position: absolute;
-  right: 10px;
-  bottom: 80px;
+  right: 30px;
+  bottom: 85px;
   width: 60px;
   height: 60px;
   background-color: #ffbe98;

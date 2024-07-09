@@ -60,7 +60,7 @@ export default function BoardList() {
           keyExtractor={item => item.board_id}
           onRefresh={onRefresh}
           refreshing={refreshing}
-          renderItem={({ item }) => (
+          renderItem={({ item }: any) => (
             <TouchableOpacity key={item.challenge_id} onPress={() => handlePress(item)}>
               <CardBox>
                 <CardItem>
@@ -100,7 +100,6 @@ const CardBox = styled.View`
   background-color: #ffffff;
   border-radius: 20px;
   margin-top: 10px;
-  elevation: 1;
   overflow: hidden;
 `
 

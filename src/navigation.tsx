@@ -61,6 +61,7 @@ function TabNavigator() {
             </Text>
           ),
           headerTitle: "돈워리",
+          headerTitleAlign: "left",
           headerTitleStyle: {
             fontWeight: "bold",
           },

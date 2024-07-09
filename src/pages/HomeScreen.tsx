@@ -121,7 +121,6 @@ const Title = styled.Text`
 const CardContainer = styled.View`
   background-color: #ffffff;
   border-radius: 20px;
-  elevation: 1;
   margin-bottom: 10px;
   display: flex;
   flex-direction: row;
@@ -137,7 +136,6 @@ const CardItem = styled.View`
 const EmptyCardContainer = styled.View`
   background-color: #ffffff;
   border-radius: 20px;
-  elevation: 1;
   margin-bottom: 10px;
   overflow: hidden;
 `
@@ -160,6 +158,7 @@ const WeekDaysBox = styled.View`
   width: 20px;
   height: 20px;
   border-radius: 5px;
+  justify-content: center;
 `
 
 const WeekendBox = styled.View`
@@ -167,6 +166,7 @@ const WeekendBox = styled.View`
   width: 20px;
   height: 20px;
   border-radius: 5px;
+  justify-content: center;
 `
 
 const DaysText = styled.Text`
