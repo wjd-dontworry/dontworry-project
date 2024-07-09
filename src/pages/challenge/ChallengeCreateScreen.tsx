@@ -23,7 +23,9 @@ export default function ChallengeCreateScreen() {
   }
 
   const removeChallenge = (id: number) => {
-    setChallengeList(challengeList.filter(item => item.id !== id))
+    if (challengeList.length > 1) {
+      setChallengeList(challengeList.filter(item => item.id !== id))
+    }
   }
 
   const addChallenge = () => {
@@ -223,7 +225,6 @@ const AddButton = styled.View`
   width: 50px;
   height: 50px;
   border-radius: 25px;
-  elevation: 1;
   justify-content: center;
   align-items: center;
 `
@@ -233,6 +234,7 @@ const SubmitButton = styled.TouchableOpacity`
   background-color: #ffbe98;
   border-radius: 15px;
   height: 35px;
+  justify-content: center;
 `
 
 const CancelButton = styled.TouchableOpacity`
@@ -240,5 +242,6 @@ const CancelButton = styled.TouchableOpacity`
   background-color: #ffffff;
   border-radius: 15px;
   height: 35px;
+  justify-content: center;
   border: 1px #ffbe98;
 `

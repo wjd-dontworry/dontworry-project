@@ -1,7 +1,6 @@
 import { Text, ScrollView, TouchableOpacity, View } from "react-native"
 import React, { useEffect, useState } from "react"
 import styled from "styled-components/native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { supabase } from "../../db/supabase"
 import { useNavigation } from "@react-navigation/native"
 import { RouteProp, useRoute } from "@react-navigation/native"
@@ -46,6 +45,7 @@ export default function ChallengeCreateScreen() {
     } else {
       await createChallengeRecord(moment().format("YYYY-MM-DD"), true, participationData?.participation_id)
       alert("성공으로 기록 완료")
+      navigation.navigate("Home" as never)
     }
   }
 
@@ -65,7 +65,7 @@ export default function ChallengeCreateScreen() {
   const deleteChallengeHandler = () => {
     deleteChallenge(route.params?.challengeId, user?.id as string)
     alert("삭제되었습니다.")
-    navigation.goBack()
+    navigation.navigate("Challenge" as never)
   }
 
   const updateChallengeHandler = () => {
@@ -86,6 +86,7 @@ export default function ChallengeCreateScreen() {
         <WriterBox>
           <Text>{challengeUser.username}</Text>
         </WriterBox>
+
         {user?.id !== null && user?.id == challengeUser.user_id && (
           <ButtonBox>
             <UpdateButton onPress={updateChallengeHandler}>
@@ -106,8 +107,12 @@ export default function ChallengeCreateScreen() {
         <ScrollView>
           {challengeTask.map((item: Tables<"challenge_task">, index: number) => (
             <TimeTableBody key={index}>
-              <TimeText>{item.time}</TimeText>
-              <ChallengeText>{item.taskname}</ChallengeText>
+              <TimeBody>
+                <TimeText>{item.time}</TimeText>
+              </TimeBody>
+              <ChallengeBody>
+                <ChallengeText>{item.taskname}</ChallengeText>
+              </ChallengeBody>
             </TimeTableBody>
           ))}
         </ScrollView>
@@ -174,23 +179,27 @@ const TimeTableBody = styled.View`
   margin-bottom: 5px;
 `
 
-const TimeText = styled.Text`
-  width: 20%;
-  font-size: 16px;
+const TimeBody = styled.View`
   padding: 5px 10px;
-
   border: 0.5px gray;
+  width: 20%;
   background-color: #fff6f1;
   border-radius: 5px;
 `
 
-const ChallengeText = styled.Text`
-  width: 75%;
+const TimeText = styled.Text`
   font-size: 16px;
-  padding: 5px 10px;
+`
 
+const ChallengeBody = styled.View`
+  padding: 5px 10px;
   border: 0.5px gray;
   border-radius: 5px;
+  width: 75%;
+`
+
+const ChallengeText = styled.Text`
+  font-size: 16px;
 `
 
 const SubmitButton = styled.TouchableOpacity`

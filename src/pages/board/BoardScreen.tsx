@@ -54,5 +54,4 @@ const CreateButton = styled.TouchableOpacity`
   border-radius: 30px;
   justify-content: center;
   align-items: center;
-  elevation: 3;
 `

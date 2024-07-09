@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components/native"
-import { Text, View, ViewStyle } from "react-native"
+import { ViewStyle } from "react-native"
 import moment from "moment"
 import OctiIcon from "react-native-vector-icons/Octicons"
 
@@ -9,14 +9,31 @@ interface IPage {
   style: ViewStyle
 }
 
+export default function Page({ item, style }: IPage) {
+  return (
+    <PageItem style={style}>
+      <Circle />
+      <CardBox>
+        <PageTitle>{item.title}</PageTitle>
+        <PageContent>
+          <UserInfoText>{`작성자 : ${item.user.username}`}</UserInfoText>
+          <UserInfoText>{`작성일 :  ${moment(item.created_at).format("YYYY.MM.DD")}`}</UserInfoText>
+          <LikeBox>
+            <LikeIcon name={"heart-fill"} />
+            <LikeInfoText> {item.challenge_like.length}</LikeInfoText>
+          </LikeBox>
+        </PageContent>
+      </CardBox>
+    </PageItem>
+  )
+}
+
 const PageItem = styled.View`
   background-color: #ffffff;
   border-radius: 20px;
-  display: flex;
   overflow: hidden;
   flex-direction: row;
   width: 100%;
-  elevation: 1;
 `
 
 const Circle = styled.View`
@@ -40,34 +57,26 @@ const PageTitle = styled.Text`
 `
 
 const PageContent = styled.View`
-  display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 5px;
   justify-content: space-between;
 `
 
-const LikeBox = styled.View`
-  display: flex;
-  flex-direction: row;
+const UserInfoText = styled.Text`
+  font-size: 12px;
+  color: #ccc;
 `
 
-export default function Page({ item, style }: IPage) {
-  return (
-    <PageItem style={style}>
-      <Circle />
-      <CardBox>
-        <PageTitle>{item.title}</PageTitle>
-        <PageContent>
-          <Text>{`작성자 ${item.user.username}`}</Text>
-          <LikeBox>
-            <OctiIcon name={"heart-fill"} size={16} />
-            <Text> {item.challenge_like.length}</Text>
-          </LikeBox>
-        </PageContent>
-        <PageContent>
-          <Text>{`작성일 ${moment(item.created_at).format("YYYY.MM.DD")}`}</Text>
-          <Text>{`조회수 0`}</Text>
-        </PageContent>
-      </CardBox>
-    </PageItem>
-  )
-}
+const LikeBox = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+`
+
+const LikeIcon = styled(OctiIcon)`
+  font-size: 15px;
+`
+
+const LikeInfoText = styled.Text`
+  font-size: 15px;
+`
